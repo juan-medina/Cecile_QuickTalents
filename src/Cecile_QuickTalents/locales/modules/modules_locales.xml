@@ -1,0 +1,6 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="utils/debug_enUS.lua"/>
+	<Script file="utils/debug_esES.lua"/>
+	<Script file="utils/version_enUS.lua"/>
+	<Script file="utils/version_esES.lua"/>
+</Ui>

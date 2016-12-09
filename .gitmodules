@@ -1,0 +1,3 @@
+[submodule "Cecile_Tools"]
+	path = Cecile_Tools
+	url = git@github.com:cecile/Cecile_Tools.git

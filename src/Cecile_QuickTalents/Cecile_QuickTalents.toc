@@ -1,0 +1,17 @@
+## Interface: 70000
+## Title: |cffffffffCecile|r_|cfffff569QuickTalents|r
+## Notes: Quick Talent helper
+## Author: Cecile
+## Version: 1.1.0.release
+## SavedVariables: Cecile_QuickTalentsDB
+## OptionalDeps:
+## X-Icon: Interface\AddOns\Cecile_RecipeTooltip\media\icons\minimap
+
+libs\load_libs.xml
+locales\load_locales.xml
+media\load_media.xml
+
+main.lua
+
+modules\load_modules.xml
+config\load_config.xml
