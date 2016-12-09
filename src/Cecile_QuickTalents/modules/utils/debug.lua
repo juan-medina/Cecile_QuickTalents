@@ -177,6 +177,8 @@ function mod:OnInitialize()
   frame.msg:SetPoint("TOPRIGHT", frame.title, "BOTTOMRIGHT");
   frame.msg:SetPoint("BOTTOM", frame.bottom, "TOP", 0, 8);
 
+  frame:SetFontObject("GameFontNormal")
+
   frame.msg:SetMaxLines(10000);
   frame.msg:SetFading(false);
   frame.msg:SetFontObject("GameFontHighlightLeft");
