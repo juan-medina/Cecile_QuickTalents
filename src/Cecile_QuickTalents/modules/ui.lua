@@ -31,9 +31,29 @@ mod.Defaults = {
           a = 1
       },
     },
+    bossFont = {
+      name = "Cecile",
+      size = 16,
+      color = {
+          r = 0,
+          g = 0,
+          b = 0,
+          a = 1
+      },
+    },
     cancelColor = {
       r = 0.7,
       g = 0.0,
+      b = 0.0
+    },
+    activateColor = {
+      r = 0.0,
+      g = 0.0,
+      b = 0.7
+    },
+    raidColor = {
+      r = 0.0,
+      g = 0.7,
       b = 0.0
     },
     windowColor = {
@@ -86,8 +106,11 @@ function mod:LoadProfileSettings()
 
   self.buttonFont = mod.CreateFont("buttonFont");
   self.titleFont = mod.CreateFont("titleFont");
+  self.bossFont = mod.CreateFont("bossFont");
 
   self.cancelColor = Engine.Profile.ui.cancelColor;
+  self.raidColor = Engine.Profile.ui.raidColor;
+  self.activateColor = Engine.Profile.ui.activateColor;
   self.windowColor = Engine.Profile.ui.windowColor;
   self.borderColor = Engine.Profile.ui.borderColor;
   self.highlightColor = Engine.Profile.ui.highlightColor;
@@ -105,8 +128,8 @@ function mod:OnProfileChanged()
 
 end
 
---flattern a ui object removing regions
-function mod.flattern(object)
+--Flattern a ui object removing regions
+function mod.Flattern(object)
 
   local BlizzardRegions = {
     'Left',
@@ -216,7 +239,7 @@ function mod.CreateUIObject(class,parent,name,template)
   frame.CreateBorder = mod.CreateBorder;
   frame.SetBorderColor = mod.SetBorderColor;
   frame.SetSolidColor = mod.SetSolidColor;
-  frame.flattern = mod.flattern;
+  frame.Flattern = mod.Flattern;
 
   return frame;
 end
@@ -246,7 +269,7 @@ function mod:CreateButton(text, width, height, color, name)
 end
 
 function mod:CreateWindow(title, width, height, color)
-  --create main frame
+
   local frame = self.CreateUIObject("Frame",_G.UIParent);
 
   frame:SetSize(width, height);
@@ -260,9 +283,131 @@ function mod:CreateWindow(title, width, height, color)
   frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 10, -10)
   frame.label:SetText(title);
 
+  frame:SetFrameStrata("FULLSCREEN_DIALOG");
+
   return frame;
 
 end
+
+function mod:CreateTalentButton(item, number)
+
+  local frame = self.CreateUIObject("Button",item,nil,"ActionButtonTemplate");
+
+  local gap = 6;
+  local width = 24;
+  local height = 24;
+
+  frame:SetSize(width, height);
+
+  frame.icon:SetTexture("Interface\\Icons\\Temp");
+  frame:Flattern();
+  frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+
+
+  local posX = 200+((width+gap)*(number-1));
+  local posY = 0;
+
+  frame:SetPoint('TOPLEFT', item, 'TOPLEFT', posX, posY);
+
+  if item.talents == nil then
+    item.talents = {};
+  end
+
+  item.talents[number] = frame;
+
+  self.number = number;
+
+  return frame;
+
+end
+
+
+function mod:CreateBossRow(number)
+
+  local frame = _G.CreateFrame("Frame",nil,self.mainFrame);
+
+  local height = 30;
+
+  frame:SetSize(140, height);
+
+  frame.label = frame:CreateFontString(nil, "ARTWORK");
+  frame.label:SetFontObject(self.bossFont);
+  frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 0, 0);
+  frame.label:SetText("Super Mega Boss of hell "..number.." :");
+
+  local start = 90;
+  local posX = 10;
+  local posY = start+(height*(number-1));
+
+  frame:SetPoint('TOPLEFT', self.mainFrame, 'TOPLEFT', posX, -posY);
+
+  for i=1,10 do
+    self:CreateTalentButton(frame,i)
+  end
+
+  self.activate = self:CreateButton("activate", 100, height-6, self.activateColor);
+  self.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 520, 0);
+  self.activate.number = number;
+
+  if self.mainFrame.boss == nil then
+    self.mainFrame.boss = {};
+  end
+
+  self.mainFrame.boss[number] = frame;
+
+  self.number = number;
+
+  return frame;
+
+end
+
+function mod:SelectRaid(number)
+
+  for k,v in pairs(self.mainFrame.raid) do
+    if k == number then
+      v:SetAlpha(1);
+    else
+      v:SetAlpha(0.2);
+    end
+  end
+
+end
+
+function mod.raidClick(raid)
+
+  mod:SelectRaid(raid.number);
+
+  _G.PlaySound("igMainMenuOption");
+
+end
+
+function mod:CreateRaidTab(number)
+
+  local gap = 6;
+  local width = 180;
+  local height = 30;
+
+  local frame = self:CreateButton("Super Raid Instace "..number..":", width, height, self.raidColor);
+
+  local posX = gap+((width+gap)*(number-1));
+  local posY = -50;
+
+  frame:SetPoint('TOPLEFT', self.mainFrame, 'TOPLEFT', posX, posY);
+
+  if self.mainFrame.raid == nil then
+    self.mainFrame.raid = {};
+  end
+
+  self.mainFrame.raid[number] = frame;
+
+  frame.number = number;
+
+  frame:SetScript("OnClick", self.raidClick);
+
+  return frame;
+
+end
+
 
 function mod:Hide()
 
@@ -291,11 +436,21 @@ end
 
 function mod:CreateUI()
 
-  self.mainFrame = mod:CreateWindow(self.label, 1000, 400, self.windowColor);
+  self.mainFrame = mod:CreateWindow(self.label, 680, 400, self.windowColor);
 
   self.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -10, -10);
   self.closeButton:SetScript("OnClick", self.closeClick);
+
+  for i=1,10 do
+    self:CreateBossRow(i);
+  end
+
+  for i=1,3 do
+    self:CreateRaidTab(i);
+  end
+
+  self:SelectRaid(1);
 
   --hide main frame
   self.mainFrame:Hide();
