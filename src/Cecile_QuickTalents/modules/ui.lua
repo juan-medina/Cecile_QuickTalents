@@ -2,7 +2,7 @@
 -- ui module
 
 --get the engine and create the module
-local Engine = select(2,...);
+local AddOnName,Engine = ...;
 local mod = Engine.AddOn:NewModule("ui");
 
 --get the locale
@@ -11,13 +11,23 @@ local mod = Engine.AddOn:NewModule("ui");
 --module defaults
 mod.Defaults = {
   profile = {
-    font = {
+    buttonFont = {
       name = "Cecile",
       size = 20,
-      colors = {
+      color = {
           r = 1,
           g = 1,
           b = 1,
+          a = 1
+      },
+    },
+    titleFont = {
+      name = "Cecile",
+      size = 30,
+      color = {
+          r = 0,
+          g = 0,
+          b = 0,
           a = 1
       },
     },
@@ -52,20 +62,36 @@ local debug = Engine.AddOn:GetModule("debug");
 --sharemedia
 local LSM = LibStub("LibSharedMedia-3.0");
 
+function mod.CreateFont(font)
+
+  --get the font settings
+  local fontSettings = Engine.Profile.ui[font];
+
+  local fontName = fontSettings.name;
+  local fontSize = fontSettings.size;
+  local fontColor = fontSettings.color;
+
+  local id = string.format("%s_%d_%f_%f_%f_%f", fontName, fontSize, fontColor.r, fontColor.g, fontColor.b, fontColor.a)
+
+  local fontObject= _G.CreateFont(id);
+
+  fontObject:SetFont(LSM:Fetch("font", fontName), fontSize)
+  fontObject:SetTextColor(fontColor.r, fontColor.g, fontColor.b, fontColor.a)
+
+  return fontObject;
+end
+
 function mod:LoadProfileSettings()
 
-  --get the font
-  self.fontName = Engine.Profile.ui.font.name;
-  self.fontSize = Engine.Profile.ui.font.size;
-  self.fontColors = Engine.Profile.ui.font.colors;
 
-  self.font = mod.CreateFont(self.fontName,self.fontSize, self.fontColors);
+  self.buttonFont = mod.CreateFont("buttonFont");
+  self.titleFont = mod.CreateFont("titleFont");
 
   self.cancelColor = Engine.Profile.ui.cancelColor;
   self.windowColor = Engine.Profile.ui.windowColor;
   self.borderColor = Engine.Profile.ui.borderColor;
   self.highlightColor = Engine.Profile.ui.highlightColor;
-
+  self.label = _G.GetAddOnMetadata(AddOnName, "Title")
 end
 
 function mod.SaveProfileSettings()
@@ -182,18 +208,6 @@ function mod.SetSolidColor(object, r,g,b,a)
 
 end
 
-function mod.CreateFont(fontName, size, color)
-
-  local id = string.format("%s_%d_%f_%f_%f_%f", fontName, size, color.r, color.g, color.b, color.a)
-
-  local font = _G.CreateFont(id);
-
-  font:SetFont(LSM:Fetch("font", fontName), size)
-  font:SetTextColor(color.r, color.g, color.b, color.a)
-
-  return font;
-end
-
 --create a UI object and inject our functions
 function mod.CreateUIObject(class,parent,name,template)
 
@@ -207,17 +221,17 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
-function mod:CreateButton(text, width, height, color)
+function mod:CreateButton(text, width, height, color, name)
 
   --create main frame
-  local frame = self.CreateUIObject("Button",self.mainFrame);
+  local frame = self.CreateUIObject("Button",self.mainFrame, name);
 
   frame:SetSize(width, height);
   frame:SetPoint("CENTER", 0, 0);
 
   frame:SetSolidColor(color.r, color.g, color.b, 1.0);
   frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
-  frame:SetNormalFontObject(self.font);
+  frame:SetNormalFontObject(self.buttonFont);
 
   -- highlight
   local texHigh = frame:CreateTexture(nil, "BORDER");
@@ -231,7 +245,7 @@ function mod:CreateButton(text, width, height, color)
 
 end
 
-function mod:CreateWindow(_, width, height, color)
+function mod:CreateWindow(title, width, height, color)
   --create main frame
   local frame = self.CreateUIObject("Frame",_G.UIParent);
 
@@ -240,6 +254,11 @@ function mod:CreateWindow(_, width, height, color)
 
   frame:SetSolidColor(color.r, color.g, color.b, color.a);
   frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+
+  frame.label = frame:CreateFontString(nil, "ARTWORK");
+  frame.label:SetFontObject(self.titleFont);
+  frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 10, -10)
+  frame.label:SetText(title);
 
   return frame;
 
@@ -251,6 +270,8 @@ function mod:Hide()
 
   self.mainFrame:Hide();
 
+  _G.ClearOverrideBindings(mod.closeButton);
+
 end
 
 function mod:Show()
@@ -259,13 +280,22 @@ function mod:Show()
 
   self.mainFrame:Show();
 
+  _G.SetOverrideBindingClick(self.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
+
+end
+
+function mod.closeClick()
+  mod:Hide();
+  _G.PlaySound("igMainMenuOption");
 end
 
 function mod:CreateUI()
 
-  self.mainFrame = mod:CreateWindow("CQT", 1000, 400, self.windowColor);
+  self.mainFrame = mod:CreateWindow(self.label, 1000, 400, self.windowColor);
 
-  self.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor);
+  self.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -10, -10);
+  self.closeButton:SetScript("OnClick", self.closeClick);
 
   --hide main frame
   self.mainFrame:Hide();
