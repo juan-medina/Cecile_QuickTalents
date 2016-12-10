@@ -177,12 +177,12 @@ function mod:OnInitialize()
   frame.msg:SetPoint("TOPRIGHT", frame.title, "BOTTOMRIGHT");
   frame.msg:SetPoint("BOTTOM", frame.bottom, "TOP", 0, 8);
 
-  frame:SetFontObject("GameFontNormal")
-
   frame.msg:SetMaxLines(10000);
   frame.msg:SetFading(false);
-  frame.msg:SetFontObject("GameFontHighlightLeft");
+  frame.msg:SetFontObject(_G.ChatFontNormal);
+  frame.msg:SetJustifyH("LEFT");
   frame.msg:EnableMouseWheel(true);
+  frame.msg:FontTemplate();
 
   -- Hook scrolling to scroll up down with mouse wheel. shift mouse wheel
   -- scroll all the way to the top/bottom.
