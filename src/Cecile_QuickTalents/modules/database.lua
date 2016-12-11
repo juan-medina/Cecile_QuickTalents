@@ -106,9 +106,58 @@ function mod:OnInitialize()
 
 end
 
-function mod:SaveTalent(raid, boss, row, col)
+function mod:GetTalent(raid, boss, spec, row)
+  local bossDB = self:GetBossDB(raid, boss, spec);
 
-  debug("saving talent raid %d boss %d row %d col %d", raid, boss, row, col);
+  if not bossDB then return nil; end
+
+  return bossDB[row];
+end
+
+function mod:GetBossDB(raid, boss, spec)
+
+  debug("get boss db %d %d", raid or 0, boss or 0);
+
+  local raidDB = Engine.Profile.database.raids;
+
+  if not self.raids[raid] then
+    return nil;
+  end
+
+  local raidName = self.raids[raid].name;
+
+  if not self.raids[raid].bosses[boss] then
+    return nil;
+  end
+
+  local bossName = self.raids[raid].bosses[boss].name;
+
+  if not raidDB[raidName] then
+
+    raidDB[raidName] = {};
+
+  end
+
+  if not raidDB[raidName][bossName] then
+    raidDB[raidName][bossName] = {};
+  end
+
+  if not raidDB[raidName][bossName][spec] then
+    raidDB[raidName][bossName][spec] = {};
+  end
+
+  local bossDB = raidDB[raidName][bossName][spec];
+
+  return bossDB;
+
+end
+
+function mod:SaveTalent(raid, boss, spec, row, col)
+
+  local bossDB = self:GetBossDB(raid, boss, spec);
+
+  bossDB[row] = col;
+
 end
 
 function mod:GetRaids()

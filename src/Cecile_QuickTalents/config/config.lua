@@ -219,7 +219,7 @@ function AddOn:OnProfileChanged(event, database)
   for _ , module in pairs(self.modules) do
 
     if module.OnProfileChanged and type(module.OnProfileChanged)=="function" then
-      module.OnProfileChanged(event);
+      module:OnProfileChanged(event);
     end
 
   end

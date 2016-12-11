@@ -364,7 +364,7 @@ function mod:SaveBossTalents(raid, boss)
   debug("saving raid %d boss %d", raid, boss);
 
   for col,talentFrame in pairs(self.mainFrame.bosses[boss].talents) do
-    database:SaveTalent(raid, boss, col, talentFrame.talentID);
+    database:SaveTalent(raid, boss, self.activeSpec, col, talentFrame.talentID);
   end
 
 end
@@ -385,13 +385,17 @@ function mod:TalentFlyoutClick(button)
 
 end
 
-function mod.talentButtonClick(button)
+function mod:AnyButtonClick()
   _G.PlaySound("igMainMenuOption");
+  self.mainFrame.talentFlyout:Hide();
+end
+function mod.talentButtonClick(button)
+  mod:AnyButtonClick();
   mod:TalentClick(button);
 end
 
 function mod.talentFlyoutButtonClick(button)
-  _G.PlaySound("igMainMenuOption");
+  mod:AnyButtonClick();
   mod:TalentFlyoutClick(button);
 end
 
@@ -597,9 +601,9 @@ end
 
 function mod.raidClick(raid)
 
-  mod:SelectRaid(raid.number);
+  mod:AnyButtonClick();
 
-  _G.PlaySound("igMainMenuOption");
+  mod:SelectRaid(raid.number);
 
 end
 
@@ -653,8 +657,11 @@ function mod:Show()
 end
 
 function mod.closeClick()
+
+  mod:AnyButtonClick();
+
   mod:Hide();
-  _G.PlaySound("igMainMenuOption");
+
 end
 
 function mod:IsExpanded()
@@ -680,8 +687,8 @@ function mod:ToggleExpand()
 end
 
 function mod.expandClick()
+  mod:AnyButtonClick();
   mod:ToggleExpand();
-  _G.PlaySound("igMainMenuOption");
 end
 
 function mod:CreateUI()
@@ -716,22 +723,47 @@ function mod:SetRaid(index, raid)
 end
 
 function mod:GetCurrentTalent(row)
-    for col=1,3 do
+  for col=1,3 do
 
-      local selected = select(10,_G.GetTalentInfoBySpecialization(self.activeSpec, row, col ));
+    local selected = select(10,_G.GetTalentInfoBySpecialization(self.activeSpec, row, col ));
 
-      if selected then
-        return col;
-      end
-
+    if selected then
+      return col;
     end
 
-    return 1;
+  end
+
+  return 1;
+end
+
+function mod:GetSavedTalent(raid, boss, row)
+
+  local saveTalent = database:GetTalent(raid, boss, self.activeSpec, row);
+
+  if not saveTalent then return nil; end
+
+  for col=1,3 do
+
+    local talentID = _G.GetTalentInfoBySpecialization(self.activeSpec, row, col );
+
+    if talentID == saveTalent then
+      return col;
+    end
+
+  end
+
+  return nil;
 end
 
 function mod:GetTalent(raid, boss,spec, row)
 
-  local currentCol = self:GetCurrentTalent(row);
+  local currentCol;
+
+  currentCol = self:GetSavedTalent(raid, boss, row);
+
+  if not currentCol then
+    currentCol = self:GetCurrentTalent(row);
+  end
 
   local talentID, _, texture = _G.GetTalentInfoBySpecialization(spec, row, currentCol );
 
@@ -747,10 +779,12 @@ function mod:UpdateTalentRows()
 
     for _,talentButton in pairs(bossFrame.talents) do
 
-      local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, self.activeSpec, talentButton.number);
+      if talentButton:IsShown() then
+        local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, self.activeSpec, talentButton.number);
 
-      talentButton.icon:SetTexture(texture);
-      talentButton.talentID = talentID;
+        talentButton.icon:SetTexture(texture);
+        talentButton.talentID = talentID;
+      end
 
     end
 
