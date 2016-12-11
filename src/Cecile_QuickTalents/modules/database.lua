@@ -156,7 +156,9 @@ function mod:SaveTalent(raid, boss, spec, row, col)
 
   local bossDB = self:GetBossDB(raid, boss, spec);
 
-  bossDB[row] = col;
+  if bossDB then
+    bossDB[row] = col;
+  end
 
 end
 

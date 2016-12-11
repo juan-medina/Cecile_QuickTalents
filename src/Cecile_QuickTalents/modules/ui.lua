@@ -331,6 +331,13 @@ function mod:MoveSelection(pos)
 
 end
 
+function mod:Select()
+
+  self:Activate(self.selection);
+  self:Hide();
+
+end
+
 function mod:MoveSelectionBy(shift)
 
   if not self.selection then
@@ -598,6 +605,18 @@ function mod:CreateTalentButton(item, number)
 
 end
 
+function mod:Activate(row)
+
+  for _,talentFrame in pairs(self.mainFrame.bosses[row].talents) do
+    _G.LearnTalent(talentFrame.talentID);
+  end
+
+end
+
+function mod.activateClick(button)
+  mod:AnyButtonClick();
+  mod:Activate(button.number);
+end
 
 function mod:CreateBossRow(number)
 
@@ -626,6 +645,7 @@ function mod:CreateBossRow(number)
   frame.activate = self:CreateButton("activate", 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
   frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 480, 0);
   frame.activate.number = number;
+  frame.activate:SetScript("OnClick",mod.activateClick);
 
   frame.current = self:CreateButton("current", 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
@@ -751,6 +771,7 @@ function mod:Hide()
   _G.ClearOverrideBindings(self.mainFrame.downButton);
   _G.ClearOverrideBindings(self.mainFrame.leftButton);
   _G.ClearOverrideBindings(self.mainFrame.rightButton);
+  _G.ClearOverrideBindings(self.mainFrame.selectButton);
 
 end
 
@@ -766,6 +787,7 @@ function mod:Show()
   _G.SetOverrideBindingClick(self.mainFrame.downButton, true, "DOWN", "CQT_DOWN_BUTTON", "LeftClick");
   _G.SetOverrideBindingClick(self.mainFrame.leftButton, true, "LEFT", "CQT_LEFT_BUTTON", "LeftClick");
   _G.SetOverrideBindingClick(self.mainFrame.rightButton, true, "RIGHT", "CQT_RIGHT_BUTTON", "LeftClick");
+  _G.SetOverrideBindingClick(self.mainFrame.selectButton, true, "ENTER", "CQT_SELECT_BUTTON", "LeftClick");
 
 end
 
@@ -827,6 +849,11 @@ function mod.rightClick()
 end
 
 
+function mod.selectClick()
+  mod:AnyButtonClick();
+  mod:Select();
+end
+
 function mod:CreateUI()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
@@ -839,21 +866,26 @@ function mod:CreateUI()
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
-  self.mainFrame.upButton = _G.CreateFrame("Button", "CQT_UP_BUTTON" ,self.mainFrame);
+  self.mainFrame.upButton = _G.CreateFrame("Button", "CQT_UP_BUTTON", self.mainFrame);
   self.mainFrame.upButton:SetScript("OnClick", self.upClick);
   self.mainFrame.upButton:Hide();
 
-  self.mainFrame.downButton = _G.CreateFrame("Button", "CQT_DOWN_BUTTON" ,self.mainFrame);
+  self.mainFrame.downButton = _G.CreateFrame("Button", "CQT_DOWN_BUTTON", self.mainFrame);
   self.mainFrame.downButton:SetScript("OnClick", self.downClick);
   self.mainFrame.downButton:Hide();
 
-  self.mainFrame.leftButton = _G.CreateFrame("Button", "CQT_LEFT_BUTTON" ,self.mainFrame);
+  self.mainFrame.leftButton = _G.CreateFrame("Button", "CQT_LEFT_BUTTON", self.mainFrame);
   self.mainFrame.leftButton:SetScript("OnClick", self.leftClick);
   self.mainFrame.leftButton:Hide();
 
-  self.mainFrame.rightButton = _G.CreateFrame("Button", "CQT_RIGHT_BUTTON" ,self.mainFrame);
+  self.mainFrame.rightButton = _G.CreateFrame("Button", "CQT_RIGHT_BUTTON", self.mainFrame);
   self.mainFrame.rightButton:SetScript("OnClick", self.rightClick);
   self.mainFrame.rightButton:Hide();
+
+
+  self.mainFrame.selectButton = _G.CreateFrame("Button", "CQT_SELECT_BUTTON", self.mainFrame);
+  self.mainFrame.selectButton:SetScript("OnClick", self.selectClick);
+  self.mainFrame.selectButton:Hide();
 
 
   for i=1,10 do
@@ -915,14 +947,20 @@ end
 function mod:GetTalent(raid, boss,spec, row)
 
   local currentCol;
+  local dirty = false;
 
   currentCol = self:GetSavedTalent(raid, boss, row);
 
   if not currentCol then
     currentCol = self:GetCurrentTalent(row);
+    dirty = true;
   end
 
   local talentID, _, texture = _G.GetTalentInfoBySpecialization(spec, row, currentCol );
+
+  if dirty then
+    database:SaveTalent(raid, boss, spec, row, talentID);
+  end
 
   return texture, talentID;
 
