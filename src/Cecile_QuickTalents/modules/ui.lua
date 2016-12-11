@@ -11,6 +11,11 @@ local mod = Engine.AddOn:NewModule("ui");
 --module defaults
 mod.Defaults = {
   profile = {
+    windowSize = {
+      width = 565,
+      height = 550,
+      maxWidth = 755
+    },
     buttonFont = {
       name = "Cecile",
       size = 20,
@@ -58,6 +63,16 @@ mod.Defaults = {
           r = 1,
           g = 1,
           b = 1,
+          a = 1
+      },
+    },
+    statusFont = {
+      name = "Cecile",
+      size = 12,
+      color = {
+          r = 0,
+          g = 0,
+          b = 0,
           a = 1
       },
     },
@@ -137,6 +152,9 @@ function mod:LoadProfileSettings()
   self.titleFont = mod.CreateFont("titleFont");
   self.specFont = mod.CreateFont("specFont");
   self.bossFont = mod.CreateFont("bossFont");
+  self.statusFont = mod.CreateFont("statusFont");
+
+  self.windowSize = Engine.Profile.ui.windowSize;
 
   self.cancelColor = Engine.Profile.ui.cancelColor;
   self.extraColor = Engine.Profile.ui.extraColor;
@@ -302,6 +320,86 @@ function mod:CreateButton(text, width, height, color, name, parent, font)
 
 end
 
+function mod:MoveSelection(pos)
+
+  local height = 45;
+  local startY = 87 + ((pos -1) * height);
+
+  self.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
+  self.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
+  self.selection = pos;
+
+end
+
+function mod:MoveSelectionBy(shift)
+
+  if not self.selection then
+
+    self.selection = 1;
+
+  end
+
+  local pos = self.selection+shift;
+
+  local bosses = #database:GetBosses(self.selectedRaid);
+
+  if pos<1 then
+    pos = bosses;
+  else
+    if pos>bosses then
+      pos = 1;
+    end
+  end
+
+  mod:MoveSelection(pos);
+end
+
+function mod:SelectRaidBy(shift)
+
+  if not self.selectedRaid then
+
+    self.selectedRaid = 1;
+
+  end
+
+  local pos = self.selectedRaid+shift;
+
+  local raids = #database:GetRaids();
+
+  if pos<1 then
+    pos = raids;
+  else
+    if pos>raids then
+      pos = 1;
+    end
+  end
+
+  mod:SelectRaid(pos);
+end
+
+function mod:CreateSelectionBox()
+  local frame = self.CreateUIObject("Frame",self.mainFrame);
+
+  frame:SetSolidColor(1,1,1,0.5);
+  frame:CreateBorder(-2,1,1,1);
+
+  frame:SetSize(self.windowSize.width, 44);
+  frame:SetFrameStrata("BACKGROUND");
+
+  local Animation = frame:CreateAnimationGroup()
+  Animation:SetLooping("BOUNCE")
+
+  local FadeOut = Animation:CreateAnimation("Alpha")
+  FadeOut:SetFromAlpha(1)
+  FadeOut:SetToAlpha(0.5)
+  FadeOut:SetDuration(1)
+  FadeOut:SetSmoothing("IN_OUT")
+
+  Animation:Play();
+
+  return frame;
+end
+
 function mod:CreateWindow(title, width, height, color)
 
   local frame = self.CreateUIObject("Frame",_G.UIParent);
@@ -322,6 +420,11 @@ function mod:CreateWindow(title, width, height, color)
   frame.spec:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -120, -20)
   frame.spec:SetJustifyH("RIGHT");
   frame.spec:SetText(title);
+
+  frame.status = frame:CreateFontString(nil, "ARTWORK");
+  frame.status:SetFontObject(self.statusFont);
+  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0)
+  frame.status:SetText("LEFT/RIGHT arrows to switch raid, UP/DOWN arrows to switch boss, ENTER to active, ESCAPE to cancel.");
 
   frame:SetFrameStrata("FULLSCREEN_DIALOG");
 
@@ -521,7 +624,7 @@ function mod:CreateBossRow(number)
   end
 
   frame.activate = self:CreateButton("activate", 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
-  frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 520, 0);
+  frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 480, 0);
   frame.activate.number = number;
 
   frame.current = self:CreateButton("current", 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
@@ -597,6 +700,8 @@ function mod:SelectRaid(number)
 
   self:UpdateTalentRows();
 
+  self:MoveSelectionBy(0);
+
 end
 
 function mod.raidClick(raid)
@@ -610,7 +715,7 @@ end
 function mod:CreateRaidTab(number)
 
   local gap = 6;
-  local width = 180;
+  local width = 160;
   local height = 30;
 
   local frame = self:CreateButton("Super Raid Instace "..number..":", width, height, self.raidColor);
@@ -642,6 +747,10 @@ function mod:Hide()
   self.mainFrame:Hide();
 
   _G.ClearOverrideBindings(self.mainFrame.closeButton);
+  _G.ClearOverrideBindings(self.mainFrame.upButton);
+  _G.ClearOverrideBindings(self.mainFrame.downButton);
+  _G.ClearOverrideBindings(self.mainFrame.leftButton);
+  _G.ClearOverrideBindings(self.mainFrame.rightButton);
 
 end
 
@@ -653,6 +762,10 @@ function mod:Show()
   self.mainFrame:Show();
 
   _G.SetOverrideBindingClick(self.mainFrame.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
+  _G.SetOverrideBindingClick(self.mainFrame.upButton, true, "UP", "CQT_UP_BUTTON", "LeftClick");
+  _G.SetOverrideBindingClick(self.mainFrame.downButton, true, "DOWN", "CQT_DOWN_BUTTON", "LeftClick");
+  _G.SetOverrideBindingClick(self.mainFrame.leftButton, true, "LEFT", "CQT_LEFT_BUTTON", "LeftClick");
+  _G.SetOverrideBindingClick(self.mainFrame.rightButton, true, "RIGHT", "CQT_RIGHT_BUTTON", "LeftClick");
 
 end
 
@@ -665,7 +778,7 @@ function mod.closeClick()
 end
 
 function mod:IsExpanded()
-  return self.mainFrame:GetWidth()==800;
+  return self.expanded;
 end
 
 function mod:ToggleExpand()
@@ -674,16 +787,18 @@ function mod:ToggleExpand()
   local expandText;
 
   if not mod:IsExpanded() then
-    width = 800;
+    width = self.windowSize.maxWidth;
     expandText="<<";
   else
-    width = 600;
+    width = self.windowSize.width;
     expandText=">>";
   end
+  self.expanded = not self.expanded;
 
   self.mainFrame:SetWidth(width);
   self.mainFrame.expandButton:SetText(expandText);
   self:SelectRaid();
+
 end
 
 function mod.expandClick()
@@ -691,9 +806,30 @@ function mod.expandClick()
   mod:ToggleExpand();
 end
 
+function mod.upClick()
+  --mod:AnyButtonClick();
+  mod:MoveSelectionBy(-1);
+end
+
+function mod.downClick()
+  --mod:AnyButtonClick();
+  mod:MoveSelectionBy(1);
+end
+
+function mod.leftClick()
+  --mod:AnyButtonClick();
+  mod:SelectRaidBy(-1);
+end
+
+function mod.rightClick()
+  --mod:AnyButtonClick();
+  mod:SelectRaidBy(1);
+end
+
+
 function mod:CreateUI()
 
-  self.mainFrame = mod:CreateWindow(self.label, 600, 550, self.windowColor);
+  self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
   self.mainFrame.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
@@ -702,6 +838,23 @@ function mod:CreateUI()
   self.mainFrame.expandButton = self:CreateButton(">>", 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
+
+  self.mainFrame.upButton = _G.CreateFrame("Button", "CQT_UP_BUTTON" ,self.mainFrame);
+  self.mainFrame.upButton:SetScript("OnClick", self.upClick);
+  self.mainFrame.upButton:Hide();
+
+  self.mainFrame.downButton = _G.CreateFrame("Button", "CQT_DOWN_BUTTON" ,self.mainFrame);
+  self.mainFrame.downButton:SetScript("OnClick", self.downClick);
+  self.mainFrame.downButton:Hide();
+
+  self.mainFrame.leftButton = _G.CreateFrame("Button", "CQT_LEFT_BUTTON" ,self.mainFrame);
+  self.mainFrame.leftButton:SetScript("OnClick", self.leftClick);
+  self.mainFrame.leftButton:Hide();
+
+  self.mainFrame.rightButton = _G.CreateFrame("Button", "CQT_RIGHT_BUTTON" ,self.mainFrame);
+  self.mainFrame.rightButton:SetScript("OnClick", self.rightClick);
+  self.mainFrame.rightButton:Hide();
+
 
   for i=1,10 do
     self:CreateBossRow(i);
@@ -712,6 +865,10 @@ function mod:CreateUI()
   end
 
   self.mainFrame.talentFlyout = self:CreateTalenFlyout();
+
+  self.selectionBox = self:CreateSelectionBox();
+
+  self.expanded = false;
 
   --hide main frame
   self.mainFrame:Hide();
@@ -779,12 +936,11 @@ function mod:UpdateTalentRows()
 
     for _,talentButton in pairs(bossFrame.talents) do
 
-      if talentButton:IsShown() then
-        local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, self.activeSpec, talentButton.number);
+      local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, self.activeSpec, talentButton.number);
 
-        talentButton.icon:SetTexture(texture);
-        talentButton.talentID = talentID;
-      end
+      talentButton.icon:SetTexture(texture);
+      talentButton.talentID = talentID;
+
 
     end
 
@@ -831,6 +987,7 @@ function mod:OnInitialize()
   end
 
   self:SelectRaid();
+  self:MoveSelection(1);
 
   Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
 
