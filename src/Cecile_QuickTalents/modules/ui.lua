@@ -31,13 +31,23 @@ mod.Defaults = {
           a = 1
       },
     },
-    bossFont = {
+    specFont = {
       name = "Cecile",
-      size = 16,
+      size = 20,
       color = {
           r = 0,
           g = 0,
           b = 0,
+          a = 1
+      },
+    },
+    bossFont = {
+      name = "Cecile",
+      size = 16,
+      color = {
+          r = 1,
+          g = 1,
+          b = 1,
           a = 1
       },
     },
@@ -79,6 +89,9 @@ mod.Defaults = {
 --debug
 local debug = Engine.AddOn:GetModule("debug");
 
+--database
+local database = Engine.AddOn:GetModule("database");
+
 --sharemedia
 local LSM = LibStub("LibSharedMedia-3.0");
 
@@ -106,6 +119,7 @@ function mod:LoadProfileSettings()
 
   self.buttonFont = mod.CreateFont("buttonFont");
   self.titleFont = mod.CreateFont("titleFont");
+  self.specFont = mod.CreateFont("specFont");
   self.bossFont = mod.CreateFont("bossFont");
 
   self.cancelColor = Engine.Profile.ui.cancelColor;
@@ -124,7 +138,10 @@ end
 
 function mod:OnProfileChanged()
 
+  debug("profile changed");
+
   self:LoadProfileSettings();
+  self:SelectRaid();
 
 end
 
@@ -283,6 +300,12 @@ function mod:CreateWindow(title, width, height, color)
   frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 10, -10)
   frame.label:SetText(title);
 
+  frame.spec = frame:CreateFontString(nil, "ARTWORK");
+  frame.spec:SetFontObject(self.specFont);
+  frame.spec:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -120, -20)
+  frame.spec:SetJustifyH("RIGHT");
+  frame.spec:SetText(title);
+
   frame:SetFrameStrata("FULLSCREEN_DIALOG");
 
   return frame;
@@ -326,9 +349,9 @@ function mod:CreateBossRow(number)
 
   local frame = _G.CreateFrame("Frame",nil,self.mainFrame);
 
-  local height = 30;
+  local height = 45;
 
-  frame:SetSize(140, height);
+  frame:SetSize(height*2, height);
 
   frame.label = frame:CreateFontString(nil, "ARTWORK");
   frame.label:SetFontObject(self.bossFont);
@@ -345,15 +368,18 @@ function mod:CreateBossRow(number)
     self:CreateTalentButton(frame,i)
   end
 
-  self.activate = self:CreateButton("activate", 100, height-6, self.activateColor);
-  self.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 520, 0);
-  self.activate.number = number;
+  frame.activate = self:CreateButton("activate", 100, height-16, self.activateColor);
+  frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 520, 0);
+  frame.activate.number = number;
 
-  if self.mainFrame.boss == nil then
-    self.mainFrame.boss = {};
+  mod.SetSolidColor(frame,1,1,1);
+  frame.texture:SetTexture("Interface\\EncounterJournal\\UI-EJ-BOSS-Nythendra");
+
+  if self.mainFrame.bosses == nil then
+    self.mainFrame.bosses = {};
   end
 
-  self.mainFrame.boss[number] = frame;
+  self.mainFrame.bosses[number] = frame;
 
   self.number = number;
 
@@ -363,13 +389,34 @@ end
 
 function mod:SelectRaid(number)
 
-  for k,v in pairs(self.mainFrame.raid) do
-    if k == number then
-      v:SetAlpha(1);
+  if number == nil then
+    number = mod.selectedRaid or 1;
+  end
+
+  for index,tab in pairs(self.mainFrame.raid) do
+    if index == number then
+      tab:SetAlpha(1);
     else
-      v:SetAlpha(0.2);
+      tab:SetAlpha(0.2);
     end
   end
+
+  for _,bossFrame in pairs(self.mainFrame.bosses) do
+    bossFrame:Hide();
+    bossFrame.activate:Hide();
+  end
+
+  local bosses = database:GetBosses(number);
+
+  for index,boss in pairs(bosses) do
+    local bossFrame = self.mainFrame.bosses[index];
+    bossFrame.label:SetText(boss.name);
+    bossFrame.texture:SetTexture(boss.texture);
+    bossFrame:Show();
+    bossFrame.activate:Show();
+  end
+
+  mod.selectedRaid = number;
 
 end
 
@@ -423,6 +470,7 @@ function mod:Show()
 
   debug("showing ui");
 
+  self:UpdateSpecInfo();
   self.mainFrame:Show();
 
   _G.SetOverrideBindingClick(self.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
@@ -436,7 +484,7 @@ end
 
 function mod:CreateUI()
 
-  self.mainFrame = mod:CreateWindow(self.label, 680, 400, self.windowColor);
+  self.mainFrame = mod:CreateWindow(self.label, 680, 550, self.windowColor);
 
   self.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -10, -10);
@@ -450,21 +498,54 @@ function mod:CreateUI()
     self:CreateRaidTab(i);
   end
 
-  self:SelectRaid(1);
-
   --hide main frame
   self.mainFrame:Hide();
 
 end
 
+function mod:SetRaid(index, raid)
+  self.mainFrame.raid[index]:SetText(raid.name);
+end
+
+function mod:UpdateSpecInfo()
+  local activeIndex = _G.GetSpecialization();
+  local _, name, _, icon  = _G.GetSpecializationInfo(activeIndex);
+
+  if not name then return; end
+
+  local localclass, myclass = _G.UnitClass("player");
+
+  local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
+  local text = _G.format(classColor..'%s %s|r |T%s:14:14:0:0:64:64:4:60:4:60|t', name, localclass, icon);
+
+  self.mainFrame.spec:SetText(text);
+
+end
+
+function mod.PlayerSpecChange()
+
+  mod:SelectRaid();
+
+  mod:UpdateSpecInfo();
+
+end
 
 function mod:OnInitialize()
 
   debug("UI module Initialize");
 
-  self:OnProfileChanged();
+  self:LoadProfileSettings();
 
   self:CreateUI();
+
+  for index,raid in pairs(database:GetRaids()) do
+    mod:SetRaid(index,raid);
+  end
+
+  self:SelectRaid();
+  mod:UpdateSpecInfo();
+
+  Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
 
 end
 
