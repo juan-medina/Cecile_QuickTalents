@@ -9,7 +9,7 @@ local AddOnName = ...;
 local L = LibStub("AceLocale-3.0"):NewLocale(AddOnName, "enUS", true);
 if not L then return; end
 
-L["UI_SETTINGS"] = "UI"
+L["UI_SETTINGS"] = "User Interface"
 L["UI_CLOSE"] = "Close"
 L["UI_ACTIVATE"] = "activate"
 L["UI_ACTIVATE_TOOLTIP"] = "activate this talents"
@@ -20,3 +20,5 @@ L["UI_COPY_TOOLTIP"] = "copy this talents"
 L["UI_PASTE"] = "paste"
 L["UI_PASTE_TOOLTIP"] = "paste the copied talents"
 L["UI_STATUS"] = "LEFT/RIGHT arrows to switch raid, UP/DOWN arrows to switch boss, ENTER to active, ESCAPE to cancel."
+L["UI_BINDING_LAUNCH"] = "Open Quick Talents UI"
+L["UI_BINDING_LAUNCH_DESC"] = "Change the Keybinding for opening the Quick Talents UI"

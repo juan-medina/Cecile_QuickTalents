@@ -116,6 +116,35 @@ mod.Defaults = {
   }
 }
 
+--module options table
+mod.Options = {
+  order = 4,
+  type = "group",
+  name = L["UI_SETTINGS"],
+  childGroups = "tab",
+  args = {
+    keybindings = {
+      type = "group",
+      name = "Keybindings",
+      order = 2,
+      args ={
+        launch = {
+          order = 1,
+          type = "keybinding",
+          name = L["UI_BINDING_LAUNCH"],
+          desc = L["UI_BINDING_LAUNCH_DESC"],
+          get = function()
+            return _G.GetBindingKey("LAUNCH_CQT");
+          end,
+          set = function(_,value)
+            mod.SafeSetBinding(value, "LAUNCH_CQT");
+          end,
+        }
+      }
+    }
+  }
+}
+
 --debug
 local debug = Engine.AddOn:GetModule("debug");
 

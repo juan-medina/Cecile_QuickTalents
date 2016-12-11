@@ -2,10 +2,9 @@
 ## Title: |cffffffffCecile|r_|cfffff569QuickTalents|r
 ## Notes: Quick Talent helper
 ## Author: Cecile
-## Version: 1.1.0.release
+## Version: 1.0.0.beta
 ## SavedVariables: Cecile_QuickTalentsDB
 ## OptionalDeps:
-## X-Icon: Interface\AddOns\Cecile_RecipeTooltip\media\icons\minimap
 
 libs\load_libs.xml
 locales\load_locales.xml
