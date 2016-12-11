@@ -31,6 +31,17 @@ function AddOn:PLAYER_ENTERING_WORLD()
 
   print(string.format(L["LOAD_MESSAGE"],Version.Title,Version.Label,Engine.slash1,Engine.slash2));
 
+  --define key bindings
+  _G.BINDING_HEADER_Cecile_QuickTalents = Version.Title
+  _G.BINDING_NAME_LAUNCH_CQL = L["BINDING_DESC"]
+
+  --get ui
+  local ui = AddOn:GetModule("ui");
+
+  --set the default binding
+  ui:SetDefaultBinding("CTRL-SHIFT-N","LAUNCH_CQT");
+
+
   --register blizzard options
   AddOn:RegisterBlizzardOptions();
 
@@ -43,5 +54,24 @@ function AddOn:OnInitialize()
 
   --set-up options
   self:SetupOptions();
+
+end
+
+--this function is actually the one showing the window
+function AddOn:DelayShow()
+
+  --get the window module
+  local ui = self:GetModule("ui");
+
+  --show the ui
+  ui:Show();
+
+end
+
+--binding function
+function AddOn:UI()
+
+  --delay the opening of the window 1 millisecond
+  self:ScheduleTimer("DelayShow", 0.1);
 
 end

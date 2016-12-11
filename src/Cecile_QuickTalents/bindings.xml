@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="LAUNCH_CQT" header="Cecile_QuickTalents" category="ADDONS">
+		Cecile_QuickTalents.AddOn:UI()
+	</Binding>
+</Bindings>

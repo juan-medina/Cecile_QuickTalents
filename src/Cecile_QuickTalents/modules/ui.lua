@@ -1050,3 +1050,55 @@ function mod.handleCommand(args)
   return handleIt;
 
 end
+
+--save & remove a binding
+function mod.SafeSetBinding(key, action)
+  if key == "" then
+    local oldkey = _G.GetBindingKey(action)
+    if oldkey then
+      _G.SetBinding(oldkey, nil)
+    end
+  else
+    _G.SetBinding(key, action)
+  end
+  _G.SaveBindings(_G.GetCurrentBindingSet())
+end
+
+
+--set a default binding if no one has it
+function mod:SetDefaultBinding(key,action)
+
+  --get our binding
+  local ourkey1,ourkey2 = _G.GetBindingKey(action);
+
+  --if we dont have it
+  if (ourkey1==nil) and (ourkey2==nil) then
+
+    --get possible action for this binding since SHIFT-P or CTRL-SHIFT-P look the same
+    local possibleAction = _G.GetBindingByKey(key);
+
+    --by default we could set this binding
+    local okToSet = true;
+
+    --if any action
+    if possibleAction then
+
+      --get the action keys
+      local key1,key2 = _G.GetBindingKey(possibleAction);
+
+      --if any key match our key
+      if (key1 == key) or (key2 == key) then
+        okToSet = false;
+      end
+
+    end
+
+    --if ok to set
+    if okToSet then
+      self.SafeSetBinding(key,action);
+      debug("default binding '%s' set to '%s'", action, key);
+    end
+
+  end
+
+end

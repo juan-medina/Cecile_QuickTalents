@@ -16,6 +16,7 @@ if not L then return; end
 L["LOAD_MESSAGE"] = "%s (version |cff0070de%s|r) loaded, type /%s or /%s for options."
 L["CONFIG_WINDOW"] = "%s (version |cff0070de%s|r) by |cffffffffCecile|r - |cff0070deEU|r - |cffff2020Zul'jin|r"
 L["PROFILES"] = "Profiles"
+L["BINDING_DESC"] = "Open Quick Talents"
 L["ABOUT"] = [[|cff0070deSpecial thanks to:|r
 
 |cff0070deUsage:|r
