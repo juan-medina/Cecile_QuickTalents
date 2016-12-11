@@ -8,6 +8,14 @@ local mod = Engine.AddOn:NewModule("database");
 --get the locale
 --local L=Engine.Locale;
 
+
+--module defaults
+mod.Defaults = {
+  profile = {
+    raids = {}
+  }
+}
+
 --debug
 local debug = Engine.AddOn:GetModule("debug");
 
@@ -96,6 +104,11 @@ function mod:OnInitialize()
   mod.AddBoss(raid,"Grand Magistrix Elisande","UI-EJ-BOSS-Grand Magistrix Elisande");
   mod.AddBoss(raid,"Gul'dan","UI-EJ-BOSS-Guldan");
 
+end
+
+function mod:SaveTalent(raid, boss, row, col)
+
+  debug("saving talent raid %d boss %d row %d col %d", raid, boss, row, col);
 end
 
 function mod:GetRaids()

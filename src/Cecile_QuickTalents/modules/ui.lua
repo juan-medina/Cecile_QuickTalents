@@ -336,10 +336,123 @@ function mod.talentButtonEnter(button)
     _G.GameTooltip:SetTalent(button.talentID);
     _G.GameTooltip:Show();
   end
+
 end
 
 function mod.talentButtonLeave()
   _G.GameTooltip:Hide();
+end
+
+function mod:TalentClick(button)
+
+  local talentFlyout = self.mainFrame.talentFlyout;
+  talentFlyout.talentParent = button;
+
+  talentFlyout:SetPoint('BOTTOMLEFT', button, 'TOPLEFT', 0, -16);
+
+  for index,flyoutButton in pairs(self.mainFrame.talentFlyout.talents) do
+    local talentID, _, texture = _G.GetTalentInfoBySpecialization(self.activeSpec, button.number, index );
+    flyoutButton.icon:SetTexture(texture);
+    flyoutButton.talentID = talentID;
+  end
+
+  talentFlyout:Show();
+
+end
+
+function mod:SaveBossTalents(raid, boss)
+  debug("saving raid %d boss %d", raid, boss);
+
+  for col,talentFrame in pairs(self.mainFrame.bosses[boss].talents) do
+    database:SaveTalent(raid, boss, col, talentFrame.talentID);
+  end
+
+end
+
+
+function mod:TalentFlyoutClick(button)
+
+  local talentFlyout = self.mainFrame.talentFlyout;
+  local talentParent = talentFlyout.talentParent;
+
+  local talentID, _, texture = _G.GetTalentInfoBySpecialization(self.activeSpec, talentParent.number, button.number );
+  talentParent.icon:SetTexture(texture);
+  talentParent.talentID = talentID;
+
+  self:SaveBossTalents(mod.selectedRaid, talentParent.boss);
+
+  talentFlyout:Hide();
+
+end
+
+function mod.talentButtonClick(button)
+  _G.PlaySound("igMainMenuOption");
+  mod:TalentClick(button);
+end
+
+function mod.talentFlyoutButtonClick(button)
+  _G.PlaySound("igMainMenuOption");
+  mod:TalentFlyoutClick(button);
+end
+
+function mod:CreateTalenFlyoutButton(parent, number)
+
+  local frame = self.CreateUIObject("Button",parent,nil,"ActionButtonTemplate");
+
+  local gap = 0;
+  local width = 32;
+  local height = 32;
+
+  frame:SetSize(width, height);
+
+  frame.icon:SetTexture("Interface\\Icons\\Temp");
+  frame:Flattern();
+  frame:CreateBorder(-2,1,1,1);
+
+  frame:SetScript("OnEnter", self.talentButtonEnter);
+  frame:SetScript("OnLeave", self.talentButtonLeave);
+  frame:SetScript("OnClick", self.talentFlyoutButtonClick);
+
+  local posX = 0;
+  local posY = ((width+gap)*(number-1));
+
+  frame:SetPoint('BOTTOMLEFT', parent, 'BOTTOMLEFT', posX, posY);
+
+  if parent.talents == nil then
+    parent.talents = {};
+  end
+
+  parent.talents[number] = frame;
+
+  frame.number = number;
+
+  return frame;
+
+end
+
+
+function mod:CreateTalenFlyout()
+
+  local frame = self.CreateUIObject("Frame",self.mainFrame);
+
+  local width = 32;
+  local height = 32*3;
+
+  frame:SetSize(width, height);
+  frame:SetPoint("CENTER", 0, 0);
+
+  frame:SetSolidColor(0,0,0,1);
+  frame:CreateBorder(-2,1,1,1);
+
+  frame:SetFrameStrata("TOOLTIP");
+
+  for i=1,3 do
+    self:CreateTalenFlyoutButton(frame,i);
+  end
+  frame:Hide();
+
+  return frame;
+
 end
 
 function mod:CreateTalentButton(item, number)
@@ -358,6 +471,7 @@ function mod:CreateTalentButton(item, number)
 
   frame:SetScript("OnEnter", self.talentButtonEnter);
   frame:SetScript("OnLeave", self.talentButtonLeave);
+  frame:SetScript("OnClick", self.talentButtonClick);
 
   local posX = 200+((width+gap)*(number-1));
   local posY = 0;
@@ -371,6 +485,7 @@ function mod:CreateTalentButton(item, number)
   item.talents[number] = frame;
 
   frame.number = number;
+  frame.boss = item.number;
 
   return frame;
 
@@ -380,6 +495,7 @@ end
 function mod:CreateBossRow(number)
 
   local frame = _G.CreateFrame("Frame",nil,self.mainFrame);
+  frame.number = number;
 
   local height = 45;
 
@@ -429,8 +545,6 @@ function mod:CreateBossRow(number)
 
   self.mainFrame.bosses[number] = frame;
 
-  self.number = number;
-
   return frame;
 
 end
@@ -476,6 +590,8 @@ function mod:SelectRaid(number)
   end
 
   mod.selectedRaid = number;
+
+  self:UpdateTalentRows();
 
 end
 
@@ -580,7 +696,6 @@ function mod:CreateUI()
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
-
   for i=1,10 do
     self:CreateBossRow(i);
   end
@@ -588,6 +703,8 @@ function mod:CreateUI()
   for i=1,3 do
     self:CreateRaidTab(i);
   end
+
+  self.mainFrame.talentFlyout = self:CreateTalenFlyout();
 
   --hide main frame
   self.mainFrame:Hide();
@@ -598,10 +715,10 @@ function mod:SetRaid(index, raid)
   self.mainFrame.raid[index]:SetText(raid.name);
 end
 
-function mod.GetCurrentTalent(row)
+function mod:GetCurrentTalent(row)
     for col=1,3 do
 
-      local selected = select(10,_G.GetTalentInfoBySpecialization(_G.GetSpecialization(), row, col ));
+      local selected = select(10,_G.GetTalentInfoBySpecialization(self.activeSpec, row, col ));
 
       if selected then
         return col;
@@ -614,7 +731,7 @@ end
 
 function mod:GetTalent(raid, boss,spec, row)
 
-  local currentCol = self.GetCurrentTalent(row);
+  local currentCol = self:GetCurrentTalent(row);
 
   local talentID, _, texture = _G.GetTalentInfoBySpecialization(spec, row, currentCol );
 
@@ -622,11 +739,30 @@ function mod:GetTalent(raid, boss,spec, row)
 
 end
 
-function mod:UpdateSpecInfo()
-  local activeIndex = _G.GetSpecialization();
-  local _, name, _, icon  = _G.GetSpecializationInfo(activeIndex);
+function mod:UpdateTalentRows()
 
-  if not activeIndex then return; end
+  if not self.activeSpec then return; end
+
+  for _,bossFrame in pairs(self.mainFrame.bosses) do
+
+    for _,talentButton in pairs(bossFrame.talents) do
+
+      local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, self.activeSpec, talentButton.number);
+
+      talentButton.icon:SetTexture(texture);
+      talentButton.talentID = talentID;
+
+    end
+
+  end
+end
+
+function mod:UpdateSpecInfo()
+
+  self.activeSpec = _G.GetSpecialization();
+  local _, name, _, icon  = _G.GetSpecializationInfo(self.activeSpec);
+
+  if not self.activeSpec then return; end
   if not name then return; end
 
   local localclass, myclass = _G.UnitClass("player");
@@ -636,19 +772,7 @@ function mod:UpdateSpecInfo()
 
   self.mainFrame.spec:SetText(text);
 
-
-  for _,bossFrame in pairs(self.mainFrame.bosses) do
-
-    for _,talentButton in pairs(bossFrame.talents) do
-
-      local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, activeIndex,talentButton.number);
-
-      talentButton.icon:SetTexture(texture);
-      talentButton.talentID = talentID;
-
-    end
-
-  end
+  self:UpdateTalentRows();
 
 end
 
