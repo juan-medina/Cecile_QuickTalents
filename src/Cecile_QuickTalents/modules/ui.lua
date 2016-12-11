@@ -21,6 +21,16 @@ mod.Defaults = {
           a = 1
       },
     },
+    buttonFontSmall = {
+      name = "Cecile",
+      size = 16,
+      color = {
+          r = 1,
+          g = 1,
+          b = 1,
+          a = 1
+      },
+    },
     titleFont = {
       name = "Cecile",
       size = 30,
@@ -54,6 +64,11 @@ mod.Defaults = {
     cancelColor = {
       r = 0.7,
       g = 0.0,
+      b = 0.0
+    },
+    extraColor = {
+      r = 0.7,
+      g = 0.7,
       b = 0.0
     },
     activateColor = {
@@ -118,11 +133,13 @@ function mod:LoadProfileSettings()
 
 
   self.buttonFont = mod.CreateFont("buttonFont");
+  self.buttonFontSmall = mod.CreateFont("buttonFontSmall");
   self.titleFont = mod.CreateFont("titleFont");
   self.specFont = mod.CreateFont("specFont");
   self.bossFont = mod.CreateFont("bossFont");
 
   self.cancelColor = Engine.Profile.ui.cancelColor;
+  self.extraColor = Engine.Profile.ui.extraColor;
   self.raidColor = Engine.Profile.ui.raidColor;
   self.activateColor = Engine.Profile.ui.activateColor;
   self.windowColor = Engine.Profile.ui.windowColor;
@@ -261,17 +278,17 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
-function mod:CreateButton(text, width, height, color, name)
+function mod:CreateButton(text, width, height, color, name, parent, font)
 
   --create main frame
-  local frame = self.CreateUIObject("Button",self.mainFrame, name);
+  local frame = self.CreateUIObject("Button",parent or self.mainFrame, name);
 
   frame:SetSize(width, height);
   frame:SetPoint("CENTER", 0, 0);
 
   frame:SetSolidColor(color.r, color.g, color.b, 1.0);
   frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
-  frame:SetNormalFontObject(self.buttonFont);
+  frame:SetNormalFontObject(font or self.buttonFont);
 
   -- highlight
   local texHigh = frame:CreateTexture(nil, "BORDER");
@@ -368,9 +385,25 @@ function mod:CreateBossRow(number)
     self:CreateTalentButton(frame,i)
   end
 
-  frame.activate = self:CreateButton("activate", 100, height-16, self.activateColor);
+  frame.activate = self:CreateButton("activate", 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
   frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 520, 0);
   frame.activate.number = number;
+
+  frame.current = self:CreateButton("current", 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
+  frame.current.number = number;
+  frame.current:Hide();
+
+  frame.copy = self:CreateButton("copy", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
+  frame.copy.number = number;
+  frame.copy:Hide();
+
+  frame.paste = self:CreateButton("paste", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
+  frame.paste.number = number;
+  frame.paste:Hide();
+
 
   mod.SetSolidColor(frame,1,1,1);
   frame.texture:SetTexture("Interface\\EncounterJournal\\UI-EJ-BOSS-Nythendra");
@@ -403,17 +436,28 @@ function mod:SelectRaid(number)
 
   for _,bossFrame in pairs(self.mainFrame.bosses) do
     bossFrame:Hide();
-    bossFrame.activate:Hide();
   end
 
   local bosses = database:GetBosses(number);
+
+  local expanded = mod:IsExpanded();
 
   for index,boss in pairs(bosses) do
     local bossFrame = self.mainFrame.bosses[index];
     bossFrame.label:SetText(boss.name);
     bossFrame.texture:SetTexture(boss.texture);
+
+    if expanded then
+        bossFrame.current:Show();
+        bossFrame.copy:Show();
+        bossFrame.paste:Show();
+    else
+        bossFrame.current:Hide();
+        bossFrame.copy:Hide();
+        bossFrame.paste:Hide();
+    end
+
     bossFrame:Show();
-    bossFrame.activate:Show();
   end
 
   mod.selectedRaid = number;
@@ -462,7 +506,7 @@ function mod:Hide()
 
   self.mainFrame:Hide();
 
-  _G.ClearOverrideBindings(mod.closeButton);
+  _G.ClearOverrideBindings(self.mainFrame.closeButton);
 
 end
 
@@ -473,7 +517,7 @@ function mod:Show()
   self:UpdateSpecInfo();
   self.mainFrame:Show();
 
-  _G.SetOverrideBindingClick(self.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
+  _G.SetOverrideBindingClick(self.mainFrame.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
 
 end
 
@@ -482,13 +526,45 @@ function mod.closeClick()
   _G.PlaySound("igMainMenuOption");
 end
 
+function mod:IsExpanded()
+  return self.mainFrame:GetWidth()==800;
+end
+
+function mod:ToggleExpand()
+
+  local width;
+  local expandText;
+
+  if not mod:IsExpanded() then
+    width = 800;
+    expandText="<<";
+  else
+    width = 600;
+    expandText=">>";
+  end
+
+  self.mainFrame:SetWidth(width);
+  self.mainFrame.expandButton:SetText(expandText);
+  self:SelectRaid();
+end
+
+function mod.expandClick()
+  mod:ToggleExpand();
+  _G.PlaySound("igMainMenuOption");
+end
+
 function mod:CreateUI()
 
-  self.mainFrame = mod:CreateWindow(self.label, 680, 550, self.windowColor);
+  self.mainFrame = mod:CreateWindow(self.label, 600, 550, self.windowColor);
 
-  self.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
-  self.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -10, -10);
-  self.closeButton:SetScript("OnClick", self.closeClick);
+  self.mainFrame.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
+  self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
+
+  self.mainFrame.expandButton = self:CreateButton(">>", 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
+  self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
+  self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
+
 
   for i=1,10 do
     self:CreateBossRow(i);
