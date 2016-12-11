@@ -3,4 +3,6 @@
 	<Script file="utils/debug_esES.lua"/>
 	<Script file="utils/version_enUS.lua"/>
 	<Script file="utils/version_esES.lua"/>
+  <Script file="ui_enUS.lua"/>
+  <Script file="ui_esES.lua"/>
 </Ui>

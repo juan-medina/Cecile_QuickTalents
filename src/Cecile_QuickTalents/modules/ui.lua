@@ -6,7 +6,7 @@ local AddOnName,Engine = ...;
 local mod = Engine.AddOn:NewModule("ui");
 
 --get the locale
---local L=Engine.Locale;
+local L=Engine.Locale;
 
 --module defaults
 mod.Defaults = {
@@ -296,7 +296,21 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
-function mod:CreateButton(text, width, height, color, name, parent, font)
+function mod.buttonEnter(button)
+    if button.tooltip then
+    _G.GameTooltip:SetOwner(button,"ANCHOR_TOPRIGHT");
+    _G.GameTooltip:SetText(button.tooltip);
+    _G.GameTooltip:Show();
+  end
+
+end
+
+function mod.buttonLeave()
+  _G.GameTooltip:Hide();
+end
+
+
+function mod:CreateButton(text, tooltip, width, height, color, name, parent, font)
 
   --create main frame
   local frame = self.CreateUIObject("Button",parent or self.mainFrame, name);
@@ -315,6 +329,10 @@ function mod:CreateButton(text, width, height, color, name, parent, font)
   frame:SetHighlightTexture(texHigh);
 
   frame:SetText(text);
+
+  frame:SetScript("OnEnter", mod.buttonEnter);
+  frame:SetScript("OnLeave", mod.buttonLeave);
+  frame.tooltip = tooltip;
 
   return frame;
 
@@ -431,7 +449,7 @@ function mod:CreateWindow(title, width, height, color)
   frame.status = frame:CreateFontString(nil, "ARTWORK");
   frame.status:SetFontObject(self.statusFont);
   frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0)
-  frame.status:SetText("LEFT/RIGHT arrows to switch raid, UP/DOWN arrows to switch boss, ENTER to active, ESCAPE to cancel.");
+  frame.status:SetText(L["UI_STATUS"]);
 
   frame:SetFrameStrata("FULLSCREEN_DIALOG");
 
@@ -642,22 +660,22 @@ function mod:CreateBossRow(number)
     self:CreateTalentButton(frame,i)
   end
 
-  frame.activate = self:CreateButton("activate", 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
+  frame.activate = self:CreateButton(L["UI_ACTIVATE"], L["UI_ACTIVATE_TOOLTIP"], 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
   frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 480, 0);
   frame.activate.number = number;
   frame.activate:SetScript("OnClick",mod.activateClick);
 
-  frame.current = self:CreateButton("current", 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.current = self:CreateButton(L["UI_CURRENT"], L["UI_CURRENT_TOOLTIP"], 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
   frame.current.number = number;
   frame.current:Hide();
 
-  frame.copy = self:CreateButton("copy", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
   frame.copy.number = number;
   frame.copy:Hide();
 
-  frame.paste = self:CreateButton("paste", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.paste = self:CreateButton(L["UI_PASTE"], L["UI_PASTE_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
   frame.paste.number = number;
   frame.paste:Hide();
@@ -738,7 +756,7 @@ function mod:CreateRaidTab(number)
   local width = 160;
   local height = 30;
 
-  local frame = self:CreateButton("Super Raid Instace "..number..":", width, height, self.raidColor);
+  local frame = self:CreateButton("Super Raid Instace "..number..":", nil, width, height, self.raidColor);
 
   local posX = gap+((width+gap)*(number-1));
   local posY = -50;
@@ -858,11 +876,11 @@ function mod:CreateUI()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton("Close", 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], nil, 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
-  self.mainFrame.expandButton = self:CreateButton(">>", 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
+  self.mainFrame.expandButton = self:CreateButton(">>", nil, 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
