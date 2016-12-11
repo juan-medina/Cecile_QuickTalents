@@ -329,13 +329,26 @@ function mod:CreateWindow(title, width, height, color)
 
 end
 
+function mod.talentButtonEnter(button)
+
+  if button.talentID then
+    _G.GameTooltip:SetOwner(button);
+    _G.GameTooltip:SetTalent(button.talentID);
+    _G.GameTooltip:Show();
+  end
+end
+
+function mod.talentButtonLeave()
+  _G.GameTooltip:Hide();
+end
+
 function mod:CreateTalentButton(item, number)
 
   local frame = self.CreateUIObject("Button",item,nil,"ActionButtonTemplate");
 
-  local gap = 6;
-  local width = 24;
-  local height = 24;
+  local gap = 8;
+  local width = 32;
+  local height = 32;
 
   frame:SetSize(width, height);
 
@@ -343,6 +356,8 @@ function mod:CreateTalentButton(item, number)
   frame:Flattern();
   frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
 
+  frame:SetScript("OnEnter", self.talentButtonEnter);
+  frame:SetScript("OnLeave", self.talentButtonLeave);
 
   local posX = 200+((width+gap)*(number-1));
   local posY = 0;
@@ -355,7 +370,7 @@ function mod:CreateTalentButton(item, number)
 
   item.talents[number] = frame;
 
-  self.number = number;
+  frame.number = number;
 
   return frame;
 
@@ -381,7 +396,7 @@ function mod:CreateBossRow(number)
 
   frame:SetPoint('TOPLEFT', self.mainFrame, 'TOPLEFT', posX, -posY);
 
-  for i=1,10 do
+  for i=1,7 do
     self:CreateTalentButton(frame,i)
   end
 
@@ -583,10 +598,35 @@ function mod:SetRaid(index, raid)
   self.mainFrame.raid[index]:SetText(raid.name);
 end
 
+function mod.GetCurrentTalent(row)
+    for col=1,3 do
+
+      local selected = select(10,_G.GetTalentInfoBySpecialization(_G.GetSpecialization(), row, col ));
+
+      if selected then
+        return col;
+      end
+
+    end
+
+    return 1;
+end
+
+function mod:GetTalent(raid, boss,spec, row)
+
+  local currentCol = self.GetCurrentTalent(row);
+
+  local talentID, _, texture = _G.GetTalentInfoBySpecialization(spec, row, currentCol );
+
+  return texture, talentID;
+
+end
+
 function mod:UpdateSpecInfo()
   local activeIndex = _G.GetSpecialization();
   local _, name, _, icon  = _G.GetSpecializationInfo(activeIndex);
 
+  if not activeIndex then return; end
   if not name then return; end
 
   local localclass, myclass = _G.UnitClass("player");
@@ -595,6 +635,20 @@ function mod:UpdateSpecInfo()
   local text = _G.format(classColor..'%s %s|r |T%s:14:14:0:0:64:64:4:60:4:60|t', name, localclass, icon);
 
   self.mainFrame.spec:SetText(text);
+
+
+  for _,bossFrame in pairs(self.mainFrame.bosses) do
+
+    for _,talentButton in pairs(bossFrame.talents) do
+
+      local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, activeIndex,talentButton.number);
+
+      talentButton.icon:SetTexture(texture);
+      talentButton.talentID = talentID;
+
+    end
+
+  end
 
 end
 
@@ -619,7 +673,6 @@ function mod:OnInitialize()
   end
 
   self:SelectRaid();
-  mod:UpdateSpecInfo();
 
   Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
 
