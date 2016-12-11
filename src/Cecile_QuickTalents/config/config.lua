@@ -11,7 +11,6 @@ local AceConfig = LibStub("AceConfig-3.0");
 local AceConfigDialog = LibStub("AceConfigDialog-3.0");
 local AceDB = LibStub("AceDB-3.0");
 local AceDBOptions = LibStub("AceDBOptions-3.0");
-local LibDualSpec = LibStub('LibDualSpec-1.0');
 
 --get locale
 local L = Engine.Locale;
@@ -156,10 +155,6 @@ function AddOn:RegisterBlizzardOptions()
   --create profile options
   local profileOptions = AceDBOptions:GetOptionsTable(Engine.DB);
   profileOptions.name = L["PROFILES"];
-
-  --setup lib dual spec
-  LibDualSpec:EnhanceDatabase(Engine.DB, Engine.Name);
-  LibDualSpec:EnhanceOptions(profileOptions, Engine.DB);
 
   --register the table and add it to blizzar config ui
   AceConfig:RegisterOptionsTable(Engine.Name.."Profile", profileOptions);
