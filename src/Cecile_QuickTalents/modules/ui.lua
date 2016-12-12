@@ -854,18 +854,22 @@ function mod:ToggleExpand()
 
   local width;
   local expandText;
+  local tooltip;
 
   if not mod:IsExpanded() then
     width = self.windowSize.maxWidth;
     expandText="<<";
+    tooltip = L["UI_EXPAND_LESS_DESC"];
   else
     width = self.windowSize.width;
     expandText=">>";
+    tooltip = L["UI_EXPAND_PLUS_DESC"];
   end
   self.expanded = not self.expanded;
 
   self.mainFrame:SetWidth(width);
   self.mainFrame.expandButton:SetText(expandText);
+  self.mainFrame.expandButton.tooltip = tooltip;
   self:SelectRaid();
 
 end
@@ -909,7 +913,7 @@ function mod:CreateUI()
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
-  self.mainFrame.expandButton = self:CreateButton(">>", nil, 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
+  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
