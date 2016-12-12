@@ -104,6 +104,17 @@ function mod:OnInitialize()
   mod.AddBoss(raid,"Grand Magistrix Elisande","UI-EJ-BOSS-Grand Magistrix Elisande");
   mod.AddBoss(raid,"Gul'dan","UI-EJ-BOSS-Guldan");
 
+  raid = mod:AddRaid("Mythic +");
+  mod.AddBoss(raid,"Black Rock Hold","UI-EJ-BOSS-Lord Kurtalos Ravencrest");
+  mod.AddBoss(raid,"Court of Stars","UI-EJ-BOSS-Advisor Melandrus");
+  mod.AddBoss(raid,"Darkheart Thicket","UI-EJ-BOSS-Shade of Xavius");
+  mod.AddBoss(raid,"Eye of Azshara","UI-EJ-BOSS-Wrath of Azshara");
+  mod.AddBoss(raid,"Halls of Valor","UI-EJ-BOSS-Odyn");
+  mod.AddBoss(raid,"Maw of Souls","UI-EJ-BOSS-Helya");
+  mod.AddBoss(raid,"Neltharion's Lair","UI-EJ-BOSS-Dargrul the Underking");
+  mod.AddBoss(raid,"The Arcway","UI-EJ-BOSS-Advisor Vandros");
+  mod.AddBoss(raid,"Vault of the Wardens","UI-EJ-BOSS-Cordana");
+
 end
 
 function mod:GetTalent(raid, boss, spec, row)
