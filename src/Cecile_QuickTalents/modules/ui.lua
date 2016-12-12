@@ -12,13 +12,13 @@ local L=Engine.Locale;
 mod.Defaults = {
   profile = {
     windowSize = {
-      width = 565,
+      width = 585,
       height = 550,
       maxWidth = 755
     },
     buttonFont = {
       name = "Cecile",
-      size = 20,
+      size = 16,
       color = {
           r = 1,
           g = 1,
@@ -471,7 +471,7 @@ function mod:CreateWindow(title, width, height, color)
 
   frame.spec = frame:CreateFontString(nil, "ARTWORK");
   frame.spec:SetFontObject(self.specFont);
-  frame.spec:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -120, -20)
+  frame.spec:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -120, -15)
   frame.spec:SetJustifyH("RIGHT");
   frame.spec:SetText(title);
 
@@ -733,7 +733,7 @@ function mod:SelectRaid(number)
     if index == number then
       tab:SetAlpha(1);
     else
-      tab:SetAlpha(0.2);
+      tab:SetAlpha(0.4);
     end
   end
 
@@ -782,7 +782,7 @@ end
 function mod:CreateRaidTab(number)
 
   local gap = 6;
-  local width = 160;
+  local width = 132;
   local height = 30;
 
   local frame = self:CreateButton("Super Raid Instace "..number..":", nil, width, height, self.raidColor);
@@ -905,7 +905,7 @@ function mod:CreateUI()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], nil, 100, 40, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], nil, 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
@@ -939,7 +939,7 @@ function mod:CreateUI()
     self:CreateBossRow(i);
   end
 
-  for i=1,3 do
+  for i=1,#database:GetRaids() do
     self:CreateRaidTab(i);
   end
 
