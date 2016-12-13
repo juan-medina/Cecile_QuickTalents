@@ -440,7 +440,7 @@ function mod:CreateSelectionBox()
   frame:SetSize(self.windowSize.width, 44);
   frame:SetFrameStrata("BACKGROUND");
 
-  local Animation = frame:CreateAnimationGroup()
+  local Animation = frame:CreateAnimationGroup();
   Animation:SetLooping("BOUNCE")
 
   local FadeOut = Animation:CreateAnimation("Alpha")
@@ -532,9 +532,9 @@ function mod:TalentFlyoutClick(button)
   local talentFlyout = self.mainFrame.talentFlyout;
   local talentParent = talentFlyout.talentParent;
 
-  local talentID, _, texture = _G.GetTalentInfoBySpecialization(self.activeSpec, talentParent.number, button.number );
-  talentParent.icon:SetTexture(texture);
-  talentParent.talentID = talentID;
+  local talentID = _G.GetTalentInfoBySpecialization(self.activeSpec, talentParent.number, button.number );
+
+  mod:SetTalentTexture(talentParent, talentID)
 
   self:SaveBossTalents(mod.selectedRaid, talentParent.boss);
 
@@ -633,6 +633,23 @@ function mod:CreateTalentButton(item, number)
   frame:SetScript("OnEnter", self.talentButtonEnter);
   frame:SetScript("OnLeave", self.talentButtonLeave);
   frame:SetScript("OnClick", self.talentButtonClick);
+
+  -- animation
+  frame.blinkTexture = frame:CreateTexture(nil, "BORDER");
+  frame.blinkTexture:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, 1);
+  frame.blinkTexture:SetAllPoints(true);
+
+  frame.blinkTexture.anim = frame.blinkTexture:CreateAnimationGroup();
+  frame.blinkTexture.anim:SetLooping("BOUNCE")
+
+  local FadeOut = frame.blinkTexture.anim:CreateAnimation("Alpha")
+  FadeOut:SetFromAlpha(0.2)
+  FadeOut:SetToAlpha(0.4)
+  FadeOut:SetDuration(0.5)
+  FadeOut:SetSmoothing("IN_OUT")
+
+  frame.blinkTexture.anim:Stop();
+  frame.blinkTexture:Hide();
 
   local posX = 200+((width+gap)*(number-1));
   local posY = 0;
@@ -965,29 +982,10 @@ end
 function mod:GetCurrentTalent(row)
   for col=1,3 do
 
-    local selected = select(10,_G.GetTalentInfoBySpecialization(self.activeSpec, row, col ));
+    local talentID, _, _, _, _, _, _, _, _, selected = _G.GetTalentInfoBySpecialization(self.activeSpec, row, col );
 
     if selected then
-      return col;
-    end
-
-  end
-
-  return 1;
-end
-
-function mod:GetSavedTalent(raid, boss, row)
-
-  local saveTalent = database:GetTalent(raid, boss, self.activeSpec, row);
-
-  if not saveTalent then return nil; end
-
-  for col=1,3 do
-
-    local talentID = _G.GetTalentInfoBySpecialization(self.activeSpec, row, col );
-
-    if talentID == saveTalent then
-      return col;
+      return talentID;
     end
 
   end
@@ -995,25 +993,43 @@ function mod:GetSavedTalent(raid, boss, row)
   return nil;
 end
 
-function mod:GetTalent(raid, boss,spec, row)
+function mod:GetTalent(raid, boss, row)
 
-  local currentCol;
-  local dirty = false;
+  local savedTalent = database:GetTalent(raid, boss, self.activeSpec, row);
+  local currentTalent = self:GetCurrentTalent(row);
 
-  currentCol = self:GetSavedTalent(raid, boss, row);
+  if savedTalent == nil then
 
-  if not currentCol then
-    currentCol = self:GetCurrentTalent(row);
-    dirty = true;
+    database:SaveTalent(raid, boss, self.activeSpec, row, currentTalent);
+    return currentTalent;
+
+  else
+
+    return savedTalent;
+
   end
 
-  local talentID, _, texture = _G.GetTalentInfoBySpecialization(spec, row, currentCol );
+end
 
-  if dirty then
-    database:SaveTalent(raid, boss, spec, row, talentID);
+function mod:SetTalentTexture(button, talentID)
+
+  local _, _, texture = _G.GetTalentInfoByID(talentID);
+  local currentTalent = self:GetCurrentTalent(button.number);
+
+  button.icon:SetTexture(texture);
+  button.talentID = talentID;
+
+  if not (currentTalent == talentID) then
+
+    button.blinkTexture.anim:Play();
+    button.blinkTexture:Show();
+
+  else
+
+    button.blinkTexture.anim:Stop();
+    button.blinkTexture:Hide();
+
   end
-
-  return texture, talentID;
 
 end
 
@@ -1025,11 +1041,9 @@ function mod:UpdateTalentRows()
 
     for _,talentButton in pairs(bossFrame.talents) do
 
-      local texture, talentID = self:GetTalent(mod.selectedRaid,bossFrame.number, self.activeSpec, talentButton.number);
+      local talentID = self:GetTalent(mod.selectedRaid, bossFrame.number, talentButton.number);
 
-      talentButton.icon:SetTexture(texture);
-      talentButton.talentID = talentID;
-
+      self:SetTalentTexture(talentButton, talentID);
 
     end
 
