@@ -742,6 +742,8 @@ end
 
 function mod:SelectRaid(number)
 
+  if not mod.mainFrame then return; end
+
   if number == nil then
     number = mod.selectedRaid or 1;
   end
@@ -843,6 +845,11 @@ function mod:Show()
 
   debug("showing ui");
 
+  if(mod.mainFrame==nil) then
+    database:Load();
+    mod:CreateUI();
+  end
+
   self:UpdateSpecInfo();
   self.mainFrame:Show();
 
@@ -922,7 +929,7 @@ function mod.selectClick()
   mod:Select();
 end
 
-function mod:CreateUI()
+function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
@@ -1013,21 +1020,25 @@ end
 
 function mod:SetTalentTexture(button, talentID)
 
-  local _, _, texture = _G.GetTalentInfoByID(talentID);
-  local currentTalent = self:GetCurrentTalent(button.number);
+  if button and button:IsShown() and talentID then
 
-  button.icon:SetTexture(texture);
-  button.talentID = talentID;
+    local _, _, texture = _G.GetTalentInfoByID(talentID);
+    local currentTalent = self:GetCurrentTalent(button.number);
 
-  if not (currentTalent == talentID) then
+    button.icon:SetTexture(texture);
+    button.talentID = talentID;
 
-    button.blinkTexture.anim:Play();
-    button.blinkTexture:Show();
+    if not (currentTalent == talentID) then
 
-  else
+      button.blinkTexture.anim:Play();
+      button.blinkTexture:Show();
 
-    button.blinkTexture.anim:Stop();
-    button.blinkTexture:Hide();
+    else
+
+      button.blinkTexture.anim:Stop();
+      button.blinkTexture:Hide();
+
+    end
 
   end
 
@@ -1077,13 +1088,9 @@ function mod.PlayerSpecChange()
 
 end
 
-function mod:OnInitialize()
+function mod:CreateUI()
 
-  debug("UI module Initialize");
-
-  self:LoadProfileSettings();
-
-  self:CreateUI();
+  self:CreateWidgets();
 
   for index,raid in pairs(database:GetRaids()) do
     mod:SetRaid(index,raid);
@@ -1093,6 +1100,14 @@ function mod:OnInitialize()
   self:MoveSelection(1);
 
   Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
+
+end
+
+function mod:OnInitialize()
+
+  debug("UI module Initialize");
+
+  self:LoadProfileSettings();
 
 end
 
