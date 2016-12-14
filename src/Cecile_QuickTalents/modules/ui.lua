@@ -12,9 +12,9 @@ local L=Engine.Locale;
 mod.Defaults = {
   profile = {
     windowSize = {
-      width = 585,
+      width = 700,
       height = 550,
-      maxWidth = 755
+      maxWidth = 820
     },
     buttonFont = {
       name = "Cecile",
@@ -651,7 +651,7 @@ function mod:CreateTalentButton(item, number)
   frame.blinkTexture.anim:Stop();
   frame.blinkTexture:Hide();
 
-  local posX = 200+((width+gap)*(number-1));
+  local posX = 220+((width+gap)*(number-1));
   local posY = 0;
 
   frame:SetPoint('TOPLEFT', item, 'TOPLEFT', posX, posY);
@@ -707,7 +707,7 @@ function mod:CreateBossRow(number)
   end
 
   frame.activate = self:CreateButton(L["UI_ACTIVATE"], L["UI_ACTIVATE_TOOLTIP"], 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
-  frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 480, 0);
+  frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 550, 0);
   frame.activate.number = number;
   frame.activate:SetScript("OnClick",mod.activateClick);
 
@@ -801,7 +801,7 @@ end
 function mod:CreateRaidTab(number)
 
   local gap = 6;
-  local width = 132;
+  local width = 160;
   local height = 30;
 
   local frame = self:CreateButton("Super Raid Instace "..number..":", nil, width, height, self.raidColor);

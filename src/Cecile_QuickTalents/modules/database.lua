@@ -101,6 +101,7 @@ function mod:Load()
   self:LoadRaid(768);
   self:LoadRaid(861);
   self:LoadRaid(786);
+  self:LoadRaid(786);
 
 end
 
