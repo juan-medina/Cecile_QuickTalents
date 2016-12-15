@@ -418,7 +418,7 @@ function mod:SelectRaidBy(shift)
 
   local pos = self.selectedRaid+shift;
 
-  local raids = #database:GetRaids();
+  local raids = database:GetNumRaids();
 
   if pos<1 then
     pos = raids;
@@ -963,11 +963,11 @@ function mod:CreateWidgets()
   self.mainFrame.selectButton:Hide();
 
 
-  for i=1,10 do
+  for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
   end
 
-  for i=1,#database:GetRaids() do
+  for i=1,database:GetNumRaids() do
     self:CreateRaidTab(i);
   end
 

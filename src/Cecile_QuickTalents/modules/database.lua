@@ -53,7 +53,7 @@ function mod:AddRaid(id, name)
 
 end
 
-function mod.AddBoss(raid, id, name, texture)
+function mod:AddBoss(raid, id, name, texture)
 
   local total = #raid.bosses;
 
@@ -67,21 +67,38 @@ function mod.AddBoss(raid, id, name, texture)
 
   raid.bosses[index] = boss;
 
+  if index>self.maxBosses then
+    self.maxBosses = index;
+  end
+
   return boss;
+
+end
+
+function mod:GetNumRaids()
+  return #self.raids;
+end
+
+function mod:GetMaxBosses()
+
+  return self.maxBosses;
 
 end
 
 function mod:LoadRaid(instanceID)
 
-  local name = _G.EJ_GetInstanceInfo(instanceID);
+  local name, _, _, _, _, _, dungeonAreaMapID  = _G.EJ_GetInstanceInfo(instanceID);
 
   if not name then return; end
+  if (not dungeonAreaMapID) or (not (dungeonAreaMapID > 0)) then return; end
 
   local raid = self:AddRaid(instanceID, name);
 
+  _G.EJ_SelectInstance(instanceID);
+
   for i=1,25 do
 
-    local bossName, _, encounterID = _G.EJ_GetEncounterInfoByIndex(i, instanceID);
+    local bossName, _, encounterID = _G.EJ_GetEncounterInfoByIndex(i);
 
     if not encounterID then
       break;
@@ -89,19 +106,96 @@ function mod:LoadRaid(instanceID)
 
     local _, _, _, _, bossImage = _G.EJ_GetCreatureInfo(1, encounterID);
 
-    mod.AddBoss(raid, encounterID, bossName, bossImage);
+    mod:AddBoss(raid, encounterID, bossName, bossImage);
+
+  end
+
+end
+
+function mod:LoadRaids()
+  for indexInstance=1,25 do
+
+    local instanceID = _G.EJ_GetInstanceByIndex(indexInstance, true);
+
+    if not instanceID then
+      break;
+    end
+
+    self:LoadRaid(instanceID);
+
+  end
+end
+
+function mod:CreateMythicsPlusTable()
+
+  self.mythicInstancesNames = { };
+
+  local mapsIDs = {};
+
+  _G.C_ChallengeMode.GetMapTable(mapsIDs);
+
+  for _,v in ipairs(mapsIDs) do
+
+    local name = _G.C_ChallengeMode.GetMapInfo(v);
+
+    self.mythicInstancesNames[name] = true;
+
+  end
+
+end
+
+function mod:LoadMythicsPlus()
+
+  if self.mythicInstancesNames==nil then
+    self:CreateMythicsPlusTable();
+  end
+
+  local raid = self:AddRaid(99999, "Mythic +");
+
+  for indexInstance=1,25 do
+
+    local instanceID, name = _G.EJ_GetInstanceByIndex(indexInstance, false);
+
+    if not instanceID then
+      break;
+    end
+
+    if self.mythicInstancesNames[name] then
+
+      local lastEncounterID;
+
+      _G.EJ_SelectInstance(instanceID);
+
+      for indexBoss=1,25 do
+
+        local _, _, encounterID = _G.EJ_GetEncounterInfoByIndex(indexBoss);
+
+        if not encounterID then
+          break;
+        end
+
+        lastEncounterID = encounterID;
+
+      end
+
+      if lastEncounterID then
+
+        local _, _, _, _, bossImage = _G.EJ_GetCreatureInfo(1, lastEncounterID);
+
+        mod:AddBoss(raid, instanceID.."-"..lastEncounterID, name, bossImage);
+
+      end
+
+    end
 
   end
 
 end
 
 function mod:Load()
-  self.raids = {};
 
-  self:LoadRaid(768);
-  self:LoadRaid(861);
-  self:LoadRaid(786);
-  self:LoadRaid(786);
+  self:LoadRaids();
+  self:LoadMythicsPlus();
 
 end
 
@@ -110,6 +204,9 @@ function mod:OnInitialize()
   debug("Database module Initialize");
 
   self:OnProfileChanged();
+
+  self.raids = {};
+  self.maxBosses = 0;
 
 end
 
@@ -122,8 +219,6 @@ function mod:GetTalent(raid, boss, spec, row)
 end
 
 function mod:GetBossDB(raid, boss, spec)
-
-  debug("get boss db %d %d", raid or 0, boss or 0);
 
   local raidDB = Engine.Profile.database.raids;
 
