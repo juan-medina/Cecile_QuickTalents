@@ -326,7 +326,9 @@ function mod.CreateUIObject(class,parent,name,template)
 end
 
 function mod.buttonEnter(button)
-    if button.tooltip then
+
+  if button.tooltip and button:IsEnabled() then
+
     _G.GameTooltip:SetOwner(button,"ANCHOR_TOPRIGHT");
     _G.GameTooltip:SetText(button.tooltip);
     _G.GameTooltip:Show();
@@ -338,6 +340,26 @@ function mod.buttonLeave()
   _G.GameTooltip:Hide();
 end
 
+
+function mod.buttonEnable(button, status)
+
+  if(status) then
+    button:SetAlpha(1);
+    button.texture:Show();
+    button.texHigh:Show();
+  else
+    button:SetAlpha(0.5);
+    button.texture:Hide();
+    button.texHigh:Hide();
+  end
+
+  button.enabled = status;
+
+end
+
+function mod.isButtonEnable(button)
+  return button.enabled;
+end
 
 function mod:CreateButton(text, tooltip, width, height, color, name, parent, font)
 
@@ -352,16 +374,20 @@ function mod:CreateButton(text, tooltip, width, height, color, name, parent, fon
   frame:SetNormalFontObject(font or self.buttonFont);
 
   -- highlight
-  local texHigh = frame:CreateTexture(nil, "BORDER");
-  texHigh:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, self.highlightColor.a);
-  texHigh:SetAllPoints(true);
-  frame:SetHighlightTexture(texHigh);
+  frame.texHigh = frame:CreateTexture(nil, "BORDER");
+  frame.texHigh:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, self.highlightColor.a);
+  frame.texHigh:SetAllPoints(true);
+  frame:SetHighlightTexture(frame.texHigh);
 
   frame:SetText(text);
 
   frame:SetScript("OnEnter", mod.buttonEnter);
   frame:SetScript("OnLeave", mod.buttonLeave);
   frame.tooltip = tooltip;
+
+  frame.Enable = mod.buttonEnable;
+  frame.IsEnabled = mod.isButtonEnable;
+  frame.enabled = true;
 
   return frame;
 
@@ -671,8 +697,10 @@ end
 
 function mod:Activate(row)
 
-  for _,talentFrame in pairs(self.mainFrame.bosses[row].talents) do
-    _G.LearnTalent(talentFrame.talentID);
+  if self.mainFrame.bosses[row].activate:IsEnabled() then
+    for _,talentFrame in pairs(self.mainFrame.bosses[row].talents) do
+      _G.LearnTalent(talentFrame.talentID);
+    end
   end
 
 end
@@ -1033,10 +1061,14 @@ function mod:SetTalentTexture(button, talentID)
       button.blinkTexture.anim:Play();
       button.blinkTexture:Show();
 
+      return false;
+
     else
 
       button.blinkTexture.anim:Stop();
       button.blinkTexture:Hide();
+
+      return true;
 
     end
 
@@ -1050,13 +1082,20 @@ function mod:UpdateTalentRows()
 
   for _,bossFrame in pairs(self.mainFrame.bosses) do
 
+    local allTalentsCurrent = true;
+
     for _,talentButton in pairs(bossFrame.talents) do
 
       local talentID = self:GetTalent(mod.selectedRaid, bossFrame.number, talentButton.number);
 
-      self:SetTalentTexture(talentButton, talentID);
+      local talentCurrent = self:SetTalentTexture(talentButton, talentID);
+
+      allTalentsCurrent = allTalentsCurrent and talentCurrent;
 
     end
+
+    bossFrame.activate:Enable(not allTalentsCurrent);
+    bossFrame.current:Enable(not allTalentsCurrent);
 
   end
 end
