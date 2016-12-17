@@ -11,11 +11,6 @@ local L=Engine.Locale;
 --module defaults
 mod.Defaults = {
   profile = {
-    windowSize = {
-      width = 700,
-      height = 550,
-      maxWidth = 820
-    },
     buttonFont = {
       name = "Cecile",
       size = 16,
@@ -183,6 +178,7 @@ end
 
 function mod:LoadProfileSettings()
 
+  debug("Load Profile Settings");
 
   self.buttonFont = mod.CreateFont("buttonFont");
   self.buttonFontSmall = mod.CreateFont("buttonFontSmall");
@@ -191,7 +187,11 @@ function mod:LoadProfileSettings()
   self.bossFont = mod.CreateFont("bossFont");
   self.statusFont = mod.CreateFont("statusFont");
 
-  self.windowSize = Engine.Profile.ui.windowSize;
+  self.windowSize = {
+      normalWidth = 650,
+      normalHeight = 100,
+      maxWidth = 650+165
+  };
 
   self.selectionColor = Engine.Profile.ui.selectionColor;
   self.cancelColor = Engine.Profile.ui.cancelColor;
@@ -1289,6 +1289,21 @@ function mod.PlayerSpecChange()
 end
 
 function mod:CreateUI()
+
+  local numtabs = database:GetNumRaids();
+
+  self.windowSize.width = 6 + (numtabs*160) + ( (numtabs-1)*6) + 32;
+
+  if self.windowSize.width < self.windowSize.normalWidth then
+    self.windowSize.width = self.windowSize.normalWidth;
+  end
+
+  if self.windowSize.width > self.windowSize.maxWidth then
+    self.windowSize.maxWidth = self.windowSize.width;
+  end
+
+  local numbosses = database:GetMaxBosses();
+  self.windowSize.height = self.windowSize.normalHeight+(numbosses*45)+40;
 
   self:CreateWidgets();
 
