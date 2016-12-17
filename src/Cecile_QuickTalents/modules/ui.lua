@@ -325,16 +325,42 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
+function mod.createTooltip(text, placeHolder)
+
+  local tooltipType = type(text);
+
+  if tooltipType=="table" then
+
+    for _,line in ipairs(text) do
+      if type(line)=="table" then
+        _G.GameTooltip:AddDoubleLine(unpack(line));
+      else
+        if line=="$" and placeHolder then
+          _G.GameTooltip:AddLine(placeHolder);
+        else
+          _G.GameTooltip:AddLine(line);
+        end
+      end
+    end
+
+  else
+    _G.GameTooltip:SetText(text);
+  end
+
+end
+
 function mod.buttonEnter(button)
 
   if button.tooltip and button:IsEnabled() then
 
+    _G.GameTooltip:ClearLines()
     _G.GameTooltip:SetOwner(button,"ANCHOR_TOPRIGHT");
 
-    if type(button.tooltip)=="function" then
+    local tooltipType = type(button.tooltip);
+    if tooltipType=="function" then
       button.tooltip(button);
     else
-      _G.GameTooltip:SetText(button.tooltip);
+      mod.createTooltip(button.tooltip)
     end
 
     _G.GameTooltip:Show();
@@ -790,8 +816,6 @@ function mod.pasteTooltip()
   if not mod.clipBoard then return; end
   if not (#mod.clipBoard>0) then return; end
 
-  _G.GameTooltip:SetText(L["UI_PASTE_TOOLTIP"]);
-
   local talentLine="";
   for row=1,7 do
     local talentID = mod.clipBoard[row];
@@ -800,12 +824,10 @@ function mod.pasteTooltip()
     talentLine = talentLine .. text;
   end
 
-  _G.GameTooltip:AddLine(talentLine);
+  mod.createTooltip(L["UI_PASTE_TOOLTIP"], talentLine);
 end
 
 function mod.currentTooltip()
-
-  _G.GameTooltip:SetText(L["UI_CURRENT_TOOLTIP"]);
 
   local talentLine="";
   for row=1,7 do
@@ -815,7 +837,7 @@ function mod.currentTooltip()
     talentLine = talentLine .. text;
   end
 
-  _G.GameTooltip:AddLine(talentLine);
+  mod.createTooltip(L["UI_CURRENT_TOOLTIP"], talentLine);
 end
 
 function mod:CreateBossRow(number)
@@ -1078,7 +1100,7 @@ function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], nil, 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
