@@ -736,6 +736,11 @@ function mod.currentClick(button)
   mod:Current(button.number);
 end
 
+function mod.currentShortcut()
+  local button = mod.mainFrame.bosses[mod.selection].current;
+  mod.currentClick(button);
+end
+
 function mod:Copy(row)
   self.clipBoard = {};
   for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
@@ -748,6 +753,11 @@ end
 function mod.copyClick(button)
   mod:AnyButtonClick();
   mod:Copy(button.number);
+end
+
+function mod.copyShortcut()
+  local button = mod.mainFrame.bosses[mod.selection].copy;
+  mod.copyClick(button);
 end
 
 function mod:Paste(row)
@@ -768,6 +778,12 @@ end
 function mod.pasteClick(button)
   mod:Paste(button.number);
 end
+
+function mod.pasteShortcut()
+  local button = mod.mainFrame.bosses[mod.selection].paste;
+  mod.pasteClick(button);
+end
+
 
 function mod.pasteTooltip()
 
@@ -1041,7 +1057,9 @@ function mod.selectClick()
   mod:Select();
 end
 
-function mod:CreateShortcut(name, key, fn)
+function mod:CreateShortcut(key, fn)
+
+  local name = "CQT_"..key.."_BUTTON"
 
   if not self.mainFrame.shortCuts then
     self.mainFrame.shortCuts = {};
@@ -1068,13 +1086,17 @@ function mod:CreateWidgets()
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
-  mod:CreateShortcut("CQT_UP_BUTTON", "UP", self.upClick);
-  mod:CreateShortcut("CQT_DOWN_BUTTON", "DOWN", self.downClick);
-  mod:CreateShortcut("CQT_LEFT_BUTTON", "LEFT", self.leftClick);
-  mod:CreateShortcut("CQT_RIGHT_BUTTON", "RIGHT", self.rightClick);
-  mod:CreateShortcut("CQT_SELECT_BUTTON", "ENTER", self.selectClick);
-  mod:CreateShortcut("CQT_EXPAND_BUTTON", "SPACE", self.expandClick);
-  mod:CreateShortcut("CQT_CLOSE_BUTTON", "ESCAPE", self.closeClick);
+  mod:CreateShortcut("UP", self.upClick);
+  mod:CreateShortcut("DOWN", self.downClick);
+  mod:CreateShortcut("LEFT", self.leftClick);
+  mod:CreateShortcut("RIGHT", self.rightClick);
+  mod:CreateShortcut("ENTER", self.selectClick);
+  mod:CreateShortcut("SPACE", self.expandClick);
+  mod:CreateShortcut("ESCAPE", self.closeClick);
+  mod:CreateShortcut("CTRL-C", self.copyShortcut);
+  mod:CreateShortcut("CTRL-V", self.pasteShortcut);
+  mod:CreateShortcut("BACKSPACE", self.currentShortcut);
+  mod:CreateShortcut("DELETE", self.currentShortcut);
 
   for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
