@@ -15,6 +15,7 @@ if not L then
 end
 
 local shortcut = "Atajo";
+L["UI_ERROR_IN_COMBAT"] = "%s |cffff0000:no se puede abrir en combate.|r"
 L["UI_SETTINGS"] = "Interfaz de Usuario"
 L["UI_CLOSE"] = "Cerrar"
 L["UI_CLOSE_TOOLTIP"] = {"Cierra la ventana"," ",{shortcut,"ESCAPE"}}

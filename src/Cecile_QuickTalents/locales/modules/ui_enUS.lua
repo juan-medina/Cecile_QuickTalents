@@ -10,6 +10,7 @@ local L = LibStub("AceLocale-3.0"):NewLocale(AddOnName, "enUS", true);
 if not L then return; end
 
 local shortcut = "Shortcut";
+L["UI_ERROR_IN_COMBAT"] = "%s |cffff0000: could not be open in combat.|r"
 L["UI_SETTINGS"] = "User Interface"
 L["UI_CLOSE"] = "Close"
 L["UI_CLOSE_TOOLTIP"] = {"Close the window"," ",{shortcut,"ESCAPE"}}

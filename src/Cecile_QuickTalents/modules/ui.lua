@@ -76,6 +76,11 @@ mod.Defaults = {
           a = 1
       },
     },
+    selectionColor = {
+      r = 1,
+      g = 1,
+      b = 1
+    },
     cancelColor = {
       r = 0.7,
       g = 0.0,
@@ -148,6 +153,9 @@ mod.Options = {
 --debug
 local debug = Engine.AddOn:GetModule("debug");
 
+--Version
+local Version = Engine.AddOn:GetModule("version");
+
 --database
 local database = Engine.AddOn:GetModule("database");
 
@@ -185,6 +193,7 @@ function mod:LoadProfileSettings()
 
   self.windowSize = Engine.Profile.ui.windowSize;
 
+  self.selectionColor = Engine.Profile.ui.selectionColor;
   self.cancelColor = Engine.Profile.ui.cancelColor;
   self.extraColor = Engine.Profile.ui.extraColor;
   self.raidColor = Engine.Profile.ui.raidColor;
@@ -493,8 +502,8 @@ end
 function mod:CreateSelectionBox()
   local frame = self.CreateUIObject("Frame",self.mainFrame);
 
-  frame:SetSolidColor(1,1,1,0.5);
-  frame:CreateBorder(-2,1,1,1);
+  frame:SetSolidColor(self.selectionColor.r,self.selectionColor.g,self.selectionColor.b,0.5);
+  frame:CreateBorder(-2,self.selectionColor.b,self.selectionColor.g,self.selectionColor.b);
 
   frame:SetSize(self.windowSize.width, 44);
   frame:SetFrameStrata("BACKGROUND");
@@ -629,7 +638,7 @@ function mod:CreateTalentFlyoutButton(parent, number)
 
   frame.icon:SetTexture("Interface\\Icons\\Temp");
   frame:Flattern();
-  frame:CreateBorder(-2,1,1,1);
+  frame:CreateBorder(-2,self.borderColor.r,self.borderColor.g,self.borderColor.b);
 
   frame:SetScript("OnEnter", self.talentButtonEnter);
   frame:SetScript("OnLeave", self.talentButtonLeave);
@@ -991,10 +1000,12 @@ function mod:Hide()
 
   debug("hiding ui");
 
-  self.mainFrame:Hide();
+  if self.mainFrame then
+    self.mainFrame:Hide();
 
-  for _, frame in pairs(self.mainFrame.shortCuts) do
-    _G.ClearOverrideBindings(frame);
+    for _, frame in pairs(self.mainFrame.shortCuts) do
+      _G.ClearOverrideBindings(frame);
+    end
   end
 
 end
@@ -1002,6 +1013,14 @@ end
 function mod:Show()
 
   debug("showing ui");
+
+  --if we are in combat display a message and return
+  if self.combat then
+
+    print(string.format(L["UI_ERROR_IN_COMBAT"],Version.Title));
+    return;
+  end
+
 
   if(mod.mainFrame==nil) then
     database:Load();
@@ -1275,11 +1294,27 @@ function mod:CreateUI()
 
 end
 
+--event when we enter combat
+function mod.InCombat()
+  mod.combat = true;
+  mod:Hide();
+end
+
+--event when we exit combat
+function mod.OutOfCombat()
+  mod.combat = false;
+end
 function mod:OnInitialize()
 
   debug("UI module Initialize");
 
   self:LoadProfileSettings();
+
+  mod.combat = false;
+
+  --handle in combat
+  Engine.AddOn:RegisterEvent("PLAYER_REGEN_ENABLED",self.OutOfCombat);
+  Engine.AddOn:RegisterEvent("PLAYER_REGEN_DISABLED",self.InCombat);
 
 end
 
