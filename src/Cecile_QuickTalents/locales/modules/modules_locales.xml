@@ -5,4 +5,6 @@
 	<Script file="utils/version_esES.lua"/>
   <Script file="ui_enUS.lua"/>
   <Script file="ui_esES.lua"/>
+  <Script file="database_enUS.lua"/>
+  <Script file="database_esES.lua"/>
 </Ui>

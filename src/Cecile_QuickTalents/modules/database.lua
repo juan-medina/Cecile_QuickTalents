@@ -6,7 +6,7 @@ local Engine = select(2,...);
 local mod = Engine.AddOn:NewModule("database");
 
 --get the locale
---local L=Engine.Locale;
+local L=Engine.Locale;
 
 
 --module defaults
@@ -150,7 +150,7 @@ function mod:LoadMythicsPlus()
     self:CreateMythicsPlusTable();
   end
 
-  local raid = self:AddRaid(99999, "Mythic +");
+  local raid = self:AddRaid(99999, L["DATABASE_MYTHIC_PLUS"]);
 
   for indexInstance=1,25 do
 
