@@ -564,6 +564,8 @@ function mod:TalentFlyoutClick(button)
 
   self:SaveBossTalents(mod.selectedRaid, talentParent.boss);
 
+  self:UpdateTalentRows();
+
   talentFlyout:Hide();
 
 end
@@ -696,8 +698,8 @@ function mod:CreateTalentButton(item, number)
 end
 
 function mod:Activate(row)
-
   if self.mainFrame.bosses[row].activate:IsEnabled() then
+    mod:AnyButtonClick();
     for _,talentFrame in pairs(self.mainFrame.bosses[row].talents) do
       _G.LearnTalent(talentFrame.talentID);
     end
@@ -706,9 +708,27 @@ function mod:Activate(row)
 end
 
 function mod.activateClick(button)
-  mod:AnyButtonClick();
   mod:Activate(button.number);
 end
+
+function mod:Current(row)
+
+  if self.mainFrame.bosses[row].current:IsEnabled() then
+  mod:AnyButtonClick();
+    for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
+      local currentTalent = self:GetCurrentTalent(talentRow);
+      database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, currentTalent);
+      self:UpdateTalentRows();
+    end
+  end
+
+end
+
+
+function mod.currentClick(button)
+  mod:Current(button.number);
+end
+
 
 function mod:CreateBossRow(number)
 
@@ -743,6 +763,7 @@ function mod:CreateBossRow(number)
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
   frame.current.number = number;
   frame.current:Hide();
+  frame.current:SetScript("OnClick",mod.currentClick);
 
   frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
@@ -953,7 +974,6 @@ end
 
 
 function mod.selectClick()
-  mod:AnyButtonClick();
   mod:Select();
 end
 
