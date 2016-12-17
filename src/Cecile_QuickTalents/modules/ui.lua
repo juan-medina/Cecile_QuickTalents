@@ -330,8 +330,15 @@ function mod.buttonEnter(button)
   if button.tooltip and button:IsEnabled() then
 
     _G.GameTooltip:SetOwner(button,"ANCHOR_TOPRIGHT");
-    _G.GameTooltip:SetText(button.tooltip);
+
+    if type(button.tooltip)=="function" then
+      button.tooltip(button);
+    else
+      _G.GameTooltip:SetText(button.tooltip);
+    end
+
     _G.GameTooltip:Show();
+
   end
 
 end
@@ -564,7 +571,7 @@ function mod:TalentFlyoutClick(button)
 
   self:SaveBossTalents(mod.selectedRaid, talentParent.boss);
 
-  self:UpdateTalentRows();
+  self:UpdateRows();
 
   talentFlyout:Hide();
 
@@ -584,7 +591,7 @@ function mod.talentFlyoutButtonClick(button)
   mod:TalentFlyoutClick(button);
 end
 
-function mod:CreateTalenFlyoutButton(parent, number)
+function mod:CreateTalentFlyoutButton(parent, number)
 
   local frame = self.CreateUIObject("Button",parent,nil,"ActionButtonTemplate");
 
@@ -620,7 +627,7 @@ function mod:CreateTalenFlyoutButton(parent, number)
 end
 
 
-function mod:CreateTalenFlyout()
+function mod:CreateTalentFlyout()
 
   local frame = self.CreateUIObject("Frame",self.mainFrame);
 
@@ -636,7 +643,7 @@ function mod:CreateTalenFlyout()
   frame:SetFrameStrata("TOOLTIP");
 
   for i=1,3 do
-    self:CreateTalenFlyoutButton(frame,i);
+    self:CreateTalentFlyoutButton(frame,i);
   end
   frame:Hide();
 
@@ -718,7 +725,7 @@ function mod:Current(row)
     for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
       local currentTalent = self:GetCurrentTalent(talentRow);
       database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, currentTalent);
-      self:UpdateTalentRows();
+      self:UpdateRows();
     end
   end
 
@@ -735,7 +742,7 @@ function mod:Copy(row)
     local talentID = self:GetTalent(mod.selectedRaid, row, talentRow);
     table.insert(self.clipBoard,talentID);
   end
-  self:UpdateTalentRows();
+  self:UpdateRows();
 end
 
 function mod.copyClick(button)
@@ -748,17 +755,51 @@ function mod:Paste(row)
   if not self.clipBoard then return; end
   if not (#self.clipBoard>0) then return; end
 
+  mod:AnyButtonClick();
+
   for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
     local talentID = self.clipBoard[talentRow];
     database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, talentID);
-    self:UpdateTalentRows();
+    self:UpdateRows();
   end
 
 end
 
 function mod.pasteClick(button)
-  mod:AnyButtonClick();
   mod:Paste(button.number);
+end
+
+function mod.pasteTooltip()
+
+  if not mod.clipBoard then return; end
+  if not (#mod.clipBoard>0) then return; end
+
+  _G.GameTooltip:SetText(L["UI_PASTE_TOOLTIP"]);
+
+  local talentLine="";
+  for row=1,7 do
+    local talentID = mod.clipBoard[row];
+    local _, _, texture = _G.GetTalentInfoByID(talentID);
+    local text = _G.format('|T%s:14:14:0:0:64:64:4:60:4:60|t',texture);
+    talentLine = talentLine .. text;
+  end
+
+  _G.GameTooltip:AddLine(talentLine);
+end
+
+function mod.currentTooltip()
+
+  _G.GameTooltip:SetText(L["UI_CURRENT_TOOLTIP"]);
+
+  local talentLine="";
+  for row=1,7 do
+    local talentID = mod:GetCurrentTalent(row);
+    local _, _, texture = _G.GetTalentInfoByID(talentID);
+    local text = _G.format('|T%s:14:14:0:0:64:64:4:60:4:60|t',texture);
+    talentLine = talentLine .. text;
+  end
+
+  _G.GameTooltip:AddLine(talentLine);
 end
 
 function mod:CreateBossRow(number)
@@ -790,7 +831,7 @@ function mod:CreateBossRow(number)
   frame.activate.number = number;
   frame.activate:SetScript("OnClick",mod.activateClick);
 
-  frame.current = self:CreateButton(L["UI_CURRENT"], L["UI_CURRENT_TOOLTIP"], 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.current = self:CreateButton(L["UI_CURRENT"], mod.currentTooltip, 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
   frame.current.number = number;
   frame.current:Hide();
@@ -802,7 +843,7 @@ function mod:CreateBossRow(number)
   frame.copy:SetScript("OnClick",mod.copyClick);
   frame.copy:Hide();
 
-  frame.paste = self:CreateButton(L["UI_PASTE"], L["UI_PASTE_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.paste = self:CreateButton(L["UI_PASTE"], mod.pasteTooltip, 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
   frame.paste.number = number;
   frame.paste:SetScript("OnClick",mod.pasteClick);
@@ -866,7 +907,7 @@ function mod:SelectRaid(number)
 
   mod.selectedRaid = number;
 
-  self:UpdateTalentRows();
+  self:UpdateRows();
 
   self:MoveSelectionBy(0);
 
@@ -1048,7 +1089,7 @@ function mod:CreateWidgets()
     self:CreateRaidTab(i);
   end
 
-  self.mainFrame.talentFlyout = self:CreateTalenFlyout();
+  self.mainFrame.talentFlyout = self:CreateTalentFlyout();
 
   self.selectionBox = self:CreateSelectionBox();
 
@@ -1125,7 +1166,7 @@ function mod:SetTalentTexture(button, talentID)
 
 end
 
-function mod:UpdateTalentRows()
+function mod:UpdateRows()
 
   if not self.activeSpec then return; end
 
@@ -1145,7 +1186,9 @@ function mod:UpdateTalentRows()
 
     bossFrame.activate:Enable(not allTalentsCurrent);
     bossFrame.current:Enable(not allTalentsCurrent);
-    bossFrame.paste:Enable(self.clipBoard and (not(#self.clipBoard==0)));
+    local hasClipboard = self.clipBoard and (not(#self.clipBoard==0))
+
+    bossFrame.paste:Enable(hasClipboard);
 
   end
 end
@@ -1165,7 +1208,7 @@ function mod:UpdateSpecInfo()
 
   self.mainFrame.spec:SetText(text);
 
-  self:UpdateTalentRows();
+  self:UpdateRows();
 
 end
 
