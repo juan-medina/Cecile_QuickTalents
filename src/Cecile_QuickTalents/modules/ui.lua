@@ -955,12 +955,9 @@ function mod:Hide()
 
   self.mainFrame:Hide();
 
-  _G.ClearOverrideBindings(self.mainFrame.closeButton);
-  _G.ClearOverrideBindings(self.mainFrame.upButton);
-  _G.ClearOverrideBindings(self.mainFrame.downButton);
-  _G.ClearOverrideBindings(self.mainFrame.leftButton);
-  _G.ClearOverrideBindings(self.mainFrame.rightButton);
-  _G.ClearOverrideBindings(self.mainFrame.selectButton);
+  for _, frame in pairs(self.mainFrame.shortCuts) do
+    _G.ClearOverrideBindings(frame);
+  end
 
 end
 
@@ -976,12 +973,9 @@ function mod:Show()
   self:UpdateSpecInfo();
   self.mainFrame:Show();
 
-  _G.SetOverrideBindingClick(self.mainFrame.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.upButton, true, "UP", "CQT_UP_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.downButton, true, "DOWN", "CQT_DOWN_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.leftButton, true, "LEFT", "CQT_LEFT_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.rightButton, true, "RIGHT", "CQT_RIGHT_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.selectButton, true, "ENTER", "CQT_SELECT_BUTTON", "LeftClick");
+  for name, frame in pairs(self.mainFrame.shortCuts) do
+    _G.SetOverrideBindingClick(frame, true, frame.key, name, "LeftClick");
+  end
 
 end
 
@@ -1047,6 +1041,21 @@ function mod.selectClick()
   mod:Select();
 end
 
+function mod:CreateShortcut(name, key, fn)
+
+  if not self.mainFrame.shortCuts then
+    self.mainFrame.shortCuts = {};
+  end
+
+  local frame = _G.CreateFrame("Button", name, self.mainFrame);
+  frame:SetScript("OnClick", fn);
+  frame:Hide();
+  frame.key=key;
+
+  self.mainFrame.shortCuts[name]=frame;
+
+end
+
 function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
@@ -1059,27 +1068,11 @@ function mod:CreateWidgets()
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
-  self.mainFrame.upButton = _G.CreateFrame("Button", "CQT_UP_BUTTON", self.mainFrame);
-  self.mainFrame.upButton:SetScript("OnClick", self.upClick);
-  self.mainFrame.upButton:Hide();
-
-  self.mainFrame.downButton = _G.CreateFrame("Button", "CQT_DOWN_BUTTON", self.mainFrame);
-  self.mainFrame.downButton:SetScript("OnClick", self.downClick);
-  self.mainFrame.downButton:Hide();
-
-  self.mainFrame.leftButton = _G.CreateFrame("Button", "CQT_LEFT_BUTTON", self.mainFrame);
-  self.mainFrame.leftButton:SetScript("OnClick", self.leftClick);
-  self.mainFrame.leftButton:Hide();
-
-  self.mainFrame.rightButton = _G.CreateFrame("Button", "CQT_RIGHT_BUTTON", self.mainFrame);
-  self.mainFrame.rightButton:SetScript("OnClick", self.rightClick);
-  self.mainFrame.rightButton:Hide();
-
-
-  self.mainFrame.selectButton = _G.CreateFrame("Button", "CQT_SELECT_BUTTON", self.mainFrame);
-  self.mainFrame.selectButton:SetScript("OnClick", self.selectClick);
-  self.mainFrame.selectButton:Hide();
-
+  mod:CreateShortcut("CQT_UP_BUTTON", "UP", self.upClick);
+  mod:CreateShortcut("CQT_DOWN_BUTTON", "DOWN", self.downClick);
+  mod:CreateShortcut("CQT_LEFT_BUTTON", "LEFT", self.leftClick);
+  mod:CreateShortcut("CQT_RIGHT_BUTTON", "RIGHT", self.rightClick);
+  mod:CreateShortcut("CQT_SELECT_BUTTON", "ENTER", self.selectClick);
 
   for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
