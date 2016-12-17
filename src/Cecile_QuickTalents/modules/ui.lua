@@ -325,11 +325,46 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
+function mod.createTooltip(text, placeHolder)
+
+  local tooltipType = type(text);
+
+  if tooltipType=="table" then
+
+    for _,line in ipairs(text) do
+      if type(line)=="table" then
+        _G.GameTooltip:AddDoubleLine(unpack(line));
+      else
+        if line=="$" and placeHolder then
+          _G.GameTooltip:AddLine(placeHolder);
+        else
+          _G.GameTooltip:AddLine(line);
+        end
+      end
+    end
+
+  else
+    _G.GameTooltip:SetText(text);
+  end
+
+end
+
 function mod.buttonEnter(button)
-    if button.tooltip then
+
+  if button.tooltip and button:IsEnabled() then
+
+    _G.GameTooltip:ClearLines()
     _G.GameTooltip:SetOwner(button,"ANCHOR_TOPRIGHT");
-    _G.GameTooltip:SetText(button.tooltip);
+
+    local tooltipType = type(button.tooltip);
+    if tooltipType=="function" then
+      button.tooltip(button);
+    else
+      mod.createTooltip(button.tooltip)
+    end
+
     _G.GameTooltip:Show();
+
   end
 
 end
@@ -338,6 +373,26 @@ function mod.buttonLeave()
   _G.GameTooltip:Hide();
 end
 
+
+function mod.buttonEnable(button, status)
+
+  if(status) then
+    button:SetAlpha(1);
+    button.texture:Show();
+    button.texHigh:Show();
+  else
+    button:SetAlpha(0.5);
+    button.texture:Hide();
+    button.texHigh:Hide();
+  end
+
+  button.enabled = status;
+
+end
+
+function mod.isButtonEnable(button)
+  return button.enabled;
+end
 
 function mod:CreateButton(text, tooltip, width, height, color, name, parent, font)
 
@@ -352,16 +407,20 @@ function mod:CreateButton(text, tooltip, width, height, color, name, parent, fon
   frame:SetNormalFontObject(font or self.buttonFont);
 
   -- highlight
-  local texHigh = frame:CreateTexture(nil, "BORDER");
-  texHigh:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, self.highlightColor.a);
-  texHigh:SetAllPoints(true);
-  frame:SetHighlightTexture(texHigh);
+  frame.texHigh = frame:CreateTexture(nil, "BORDER");
+  frame.texHigh:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, self.highlightColor.a);
+  frame.texHigh:SetAllPoints(true);
+  frame:SetHighlightTexture(frame.texHigh);
 
   frame:SetText(text);
 
   frame:SetScript("OnEnter", mod.buttonEnter);
   frame:SetScript("OnLeave", mod.buttonLeave);
   frame.tooltip = tooltip;
+
+  frame.Enable = mod.buttonEnable;
+  frame.IsEnabled = mod.isButtonEnable;
+  frame.enabled = true;
 
   return frame;
 
@@ -538,6 +597,8 @@ function mod:TalentFlyoutClick(button)
 
   self:SaveBossTalents(mod.selectedRaid, talentParent.boss);
 
+  self:UpdateRows();
+
   talentFlyout:Hide();
 
 end
@@ -556,7 +617,7 @@ function mod.talentFlyoutButtonClick(button)
   mod:TalentFlyoutClick(button);
 end
 
-function mod:CreateTalenFlyoutButton(parent, number)
+function mod:CreateTalentFlyoutButton(parent, number)
 
   local frame = self.CreateUIObject("Button",parent,nil,"ActionButtonTemplate");
 
@@ -592,7 +653,7 @@ function mod:CreateTalenFlyoutButton(parent, number)
 end
 
 
-function mod:CreateTalenFlyout()
+function mod:CreateTalentFlyout()
 
   local frame = self.CreateUIObject("Frame",self.mainFrame);
 
@@ -608,7 +669,7 @@ function mod:CreateTalenFlyout()
   frame:SetFrameStrata("TOOLTIP");
 
   for i=1,3 do
-    self:CreateTalenFlyoutButton(frame,i);
+    self:CreateTalentFlyoutButton(frame,i);
   end
   frame:Hide();
 
@@ -670,16 +731,113 @@ function mod:CreateTalentButton(item, number)
 end
 
 function mod:Activate(row)
-
-  for _,talentFrame in pairs(self.mainFrame.bosses[row].talents) do
-    _G.LearnTalent(talentFrame.talentID);
+  if self.mainFrame.bosses[row].activate:IsEnabled() then
+    mod:AnyButtonClick();
+    for _,talentFrame in pairs(self.mainFrame.bosses[row].talents) do
+      _G.LearnTalent(talentFrame.talentID);
+    end
   end
 
 end
 
 function mod.activateClick(button)
-  mod:AnyButtonClick();
   mod:Activate(button.number);
+end
+
+function mod:Current(row)
+
+  if self.mainFrame.bosses[row].current:IsEnabled() then
+  mod:AnyButtonClick();
+    for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
+      local currentTalent = self:GetCurrentTalent(talentRow);
+      database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, currentTalent);
+      self:UpdateRows();
+    end
+  end
+
+end
+
+
+function mod.currentClick(button)
+  mod:Current(button.number);
+end
+
+function mod.currentShortcut()
+  local button = mod.mainFrame.bosses[mod.selection].current;
+  mod.currentClick(button);
+end
+
+function mod:Copy(row)
+  self.clipBoard = {};
+  for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
+    local talentID = self:GetTalent(mod.selectedRaid, row, talentRow);
+    table.insert(self.clipBoard,talentID);
+  end
+  self:UpdateRows();
+end
+
+function mod.copyClick(button)
+  mod:AnyButtonClick();
+  mod:Copy(button.number);
+end
+
+function mod.copyShortcut()
+  local button = mod.mainFrame.bosses[mod.selection].copy;
+  mod.copyClick(button);
+end
+
+function mod:Paste(row)
+
+  if not self.clipBoard then return; end
+  if not (#self.clipBoard>0) then return; end
+
+  mod:AnyButtonClick();
+
+  for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
+    local talentID = self.clipBoard[talentRow];
+    database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, talentID);
+    self:UpdateRows();
+  end
+
+end
+
+function mod.pasteClick(button)
+  mod:Paste(button.number);
+end
+
+function mod.pasteShortcut()
+  local button = mod.mainFrame.bosses[mod.selection].paste;
+  mod.pasteClick(button);
+end
+
+
+function mod.pasteTooltip()
+
+  if not mod.clipBoard then return; end
+  if not (#mod.clipBoard>0) then return; end
+
+  local talentLine="";
+  for row=1,7 do
+    local talentID = mod.clipBoard[row];
+    local _, _, texture = _G.GetTalentInfoByID(talentID);
+    local text = _G.format('|T%s:14:14:0:0:64:64:4:60:4:60|t',texture);
+    talentLine = talentLine .. text;
+  end
+
+  mod.createTooltip(L["UI_PASTE_TOOLTIP"], talentLine);
+end
+
+function mod.currentTooltip()
+
+  local talentLine="";
+  for row=1,7 do
+    local talentID = mod:GetCurrentTalent(row);
+    local _, _, texture = _G.GetTalentInfoByID(talentID);
+    local text = _G.format('|T%s:14:14:0:0:64:64:4:60:4:60|t',texture);
+    talentLine = talentLine .. text;
+  end
+
+  mod.createTooltip(L["UI_CURRENT_TOOLTIP"], talentLine);
 end
 
 function mod:CreateBossRow(number)
@@ -711,19 +869,22 @@ function mod:CreateBossRow(number)
   frame.activate.number = number;
   frame.activate:SetScript("OnClick",mod.activateClick);
 
-  frame.current = self:CreateButton(L["UI_CURRENT"], L["UI_CURRENT_TOOLTIP"], 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.current = self:CreateButton(L["UI_CURRENT"], mod.currentTooltip, 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
   frame.current.number = number;
   frame.current:Hide();
+  frame.current:SetScript("OnClick",mod.currentClick);
 
   frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
   frame.copy.number = number;
+  frame.copy:SetScript("OnClick",mod.copyClick);
   frame.copy:Hide();
 
-  frame.paste = self:CreateButton(L["UI_PASTE"], L["UI_PASTE_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.paste = self:CreateButton(L["UI_PASTE"], mod.pasteTooltip, 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
   frame.paste.number = number;
+  frame.paste:SetScript("OnClick",mod.pasteClick);
   frame.paste:Hide();
 
 
@@ -784,7 +945,7 @@ function mod:SelectRaid(number)
 
   mod.selectedRaid = number;
 
-  self:UpdateTalentRows();
+  self:UpdateRows();
 
   self:MoveSelectionBy(0);
 
@@ -832,12 +993,9 @@ function mod:Hide()
 
   self.mainFrame:Hide();
 
-  _G.ClearOverrideBindings(self.mainFrame.closeButton);
-  _G.ClearOverrideBindings(self.mainFrame.upButton);
-  _G.ClearOverrideBindings(self.mainFrame.downButton);
-  _G.ClearOverrideBindings(self.mainFrame.leftButton);
-  _G.ClearOverrideBindings(self.mainFrame.rightButton);
-  _G.ClearOverrideBindings(self.mainFrame.selectButton);
+  for _, frame in pairs(self.mainFrame.shortCuts) do
+    _G.ClearOverrideBindings(frame);
+  end
 
 end
 
@@ -853,12 +1011,9 @@ function mod:Show()
   self:UpdateSpecInfo();
   self.mainFrame:Show();
 
-  _G.SetOverrideBindingClick(self.mainFrame.closeButton, true, "ESCAPE", "CQT_CANCEL_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.upButton, true, "UP", "CQT_UP_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.downButton, true, "DOWN", "CQT_DOWN_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.leftButton, true, "LEFT", "CQT_LEFT_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.rightButton, true, "RIGHT", "CQT_RIGHT_BUTTON", "LeftClick");
-  _G.SetOverrideBindingClick(self.mainFrame.selectButton, true, "ENTER", "CQT_SELECT_BUTTON", "LeftClick");
+  for name, frame in pairs(self.mainFrame.shortCuts) do
+    _G.SetOverrideBindingClick(frame, true, frame.key, name, "LeftClick");
+  end
 
 end
 
@@ -904,36 +1059,48 @@ function mod.expandClick()
 end
 
 function mod.upClick()
-  --mod:AnyButtonClick();
   mod:MoveSelectionBy(-1);
 end
 
 function mod.downClick()
-  --mod:AnyButtonClick();
   mod:MoveSelectionBy(1);
 end
 
 function mod.leftClick()
-  --mod:AnyButtonClick();
   mod:SelectRaidBy(-1);
 end
 
 function mod.rightClick()
-  --mod:AnyButtonClick();
   mod:SelectRaidBy(1);
 end
 
 
 function mod.selectClick()
-  mod:AnyButtonClick();
   mod:Select();
+end
+
+function mod:CreateShortcut(key, fn)
+
+  local name = "CQT_"..key.."_BUTTON"
+
+  if not self.mainFrame.shortCuts then
+    self.mainFrame.shortCuts = {};
+  end
+
+  local frame = _G.CreateFrame("Button", name, self.mainFrame);
+  frame:SetScript("OnClick", fn);
+  frame:Hide();
+  frame.key=key;
+
+  self.mainFrame.shortCuts[name]=frame;
+
 end
 
 function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], nil, 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
@@ -941,27 +1108,17 @@ function mod:CreateWidgets()
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
-  self.mainFrame.upButton = _G.CreateFrame("Button", "CQT_UP_BUTTON", self.mainFrame);
-  self.mainFrame.upButton:SetScript("OnClick", self.upClick);
-  self.mainFrame.upButton:Hide();
-
-  self.mainFrame.downButton = _G.CreateFrame("Button", "CQT_DOWN_BUTTON", self.mainFrame);
-  self.mainFrame.downButton:SetScript("OnClick", self.downClick);
-  self.mainFrame.downButton:Hide();
-
-  self.mainFrame.leftButton = _G.CreateFrame("Button", "CQT_LEFT_BUTTON", self.mainFrame);
-  self.mainFrame.leftButton:SetScript("OnClick", self.leftClick);
-  self.mainFrame.leftButton:Hide();
-
-  self.mainFrame.rightButton = _G.CreateFrame("Button", "CQT_RIGHT_BUTTON", self.mainFrame);
-  self.mainFrame.rightButton:SetScript("OnClick", self.rightClick);
-  self.mainFrame.rightButton:Hide();
-
-
-  self.mainFrame.selectButton = _G.CreateFrame("Button", "CQT_SELECT_BUTTON", self.mainFrame);
-  self.mainFrame.selectButton:SetScript("OnClick", self.selectClick);
-  self.mainFrame.selectButton:Hide();
-
+  mod:CreateShortcut("UP", self.upClick);
+  mod:CreateShortcut("DOWN", self.downClick);
+  mod:CreateShortcut("LEFT", self.leftClick);
+  mod:CreateShortcut("RIGHT", self.rightClick);
+  mod:CreateShortcut("ENTER", self.selectClick);
+  mod:CreateShortcut("SPACE", self.expandClick);
+  mod:CreateShortcut("ESCAPE", self.closeClick);
+  mod:CreateShortcut("CTRL-C", self.copyShortcut);
+  mod:CreateShortcut("CTRL-V", self.pasteShortcut);
+  mod:CreateShortcut("BACKSPACE", self.currentShortcut);
+  mod:CreateShortcut("DELETE", self.currentShortcut);
 
   for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
@@ -971,7 +1128,7 @@ function mod:CreateWidgets()
     self:CreateRaidTab(i);
   end
 
-  self.mainFrame.talentFlyout = self:CreateTalenFlyout();
+  self.mainFrame.talentFlyout = self:CreateTalentFlyout();
 
   self.selectionBox = self:CreateSelectionBox();
 
@@ -1033,10 +1190,14 @@ function mod:SetTalentTexture(button, talentID)
       button.blinkTexture.anim:Play();
       button.blinkTexture:Show();
 
+      return false;
+
     else
 
       button.blinkTexture.anim:Stop();
       button.blinkTexture:Hide();
+
+      return true;
 
     end
 
@@ -1044,19 +1205,29 @@ function mod:SetTalentTexture(button, talentID)
 
 end
 
-function mod:UpdateTalentRows()
+function mod:UpdateRows()
 
   if not self.activeSpec then return; end
 
   for _,bossFrame in pairs(self.mainFrame.bosses) do
 
+    local allTalentsCurrent = true;
+
     for _,talentButton in pairs(bossFrame.talents) do
 
       local talentID = self:GetTalent(mod.selectedRaid, bossFrame.number, talentButton.number);
 
-      self:SetTalentTexture(talentButton, talentID);
+      local talentCurrent = self:SetTalentTexture(talentButton, talentID);
+
+      allTalentsCurrent = allTalentsCurrent and talentCurrent;
 
     end
+
+    bossFrame.activate:Enable(not allTalentsCurrent);
+    bossFrame.current:Enable(not allTalentsCurrent);
+    local hasClipboard = self.clipBoard and (not(#self.clipBoard==0))
+
+    bossFrame.paste:Enable(hasClipboard);
 
   end
 end
@@ -1076,7 +1247,7 @@ function mod:UpdateSpecInfo()
 
   self.mainFrame.spec:SetText(text);
 
-  self:UpdateTalentRows();
+  self:UpdateRows();
 
 end
 
@@ -1098,6 +1269,7 @@ function mod:CreateUI()
 
   self:SelectRaid();
   self:MoveSelection(1);
+  self.clipBoard = {};
 
   Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
 
