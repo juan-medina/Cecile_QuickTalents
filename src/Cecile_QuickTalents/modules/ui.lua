@@ -537,12 +537,6 @@ function mod:CreateWindow(title, width, height, color)
   frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 10, -10)
   frame.label:SetText(title);
 
-  frame.spec = frame:CreateFontString(nil, "ARTWORK");
-  frame.spec:SetFontObject(self.specFont);
-  frame.spec:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -120, -15)
-  frame.spec:SetJustifyH("RIGHT");
-  frame.spec:SetText(title);
-
   frame.status = frame:CreateFontString(nil, "ARTWORK");
   frame.status:SetFontObject(self.statusFont);
   frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0)
@@ -558,7 +552,7 @@ function mod.talentButtonEnter(button)
 
   if button.talentID then
     _G.GameTooltip:SetOwner(button);
-    _G.GameTooltip:SetTalent(button.talentID);
+    _G.GameTooltip:SetTalent(button.talentID,true);
     _G.GameTooltip:Show();
   end
 
@@ -1127,6 +1121,21 @@ function mod:CreateWidgets()
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
+  self.mainFrame.specIcon = self.CreateUIObject("Button",self.mainFrame,nil,"ActionButtonTemplate");
+  self.mainFrame.specIcon:Flattern();
+  self.mainFrame.specIcon:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+  self.mainFrame.specIcon:SetSize(32,32);
+  self.mainFrame.specIcon:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'TOPLEFT', -5, 0);
+  self.mainFrame.specIcon.icon:SetTexture("Interface\\Icons\\Temp");
+  self.mainFrame.specIcon:Show();
+
+  self.mainFrame.spec = self.mainFrame:CreateFontString(nil, "ARTWORK");
+  self.mainFrame.spec:SetFontObject(self.specFont);
+  self.mainFrame.spec:SetPoint('BOTTOMRIGHT', self.mainFrame.specIcon, 'BOTTOMLEFT', -5, 0)
+  self.mainFrame.spec:SetJustifyH("RIGHT");
+  self.mainFrame.spec:SetText("");
+
+
   mod:CreateShortcut("UP", self.upClick);
   mod:CreateShortcut("DOWN", self.downClick);
   mod:CreateShortcut("LEFT", self.leftClick);
@@ -1262,9 +1271,10 @@ function mod:UpdateSpecInfo()
   local localclass, myclass = _G.UnitClass("player");
 
   local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
-  local text = _G.format(classColor..'%s %s|r |T%s:14:14:0:0:64:64:4:60:4:60|t', name, localclass, icon);
+  local text = _G.format(classColor..'%s %s|r', name, localclass);
 
   self.mainFrame.spec:SetText(text);
+  self.mainFrame.specIcon.icon:SetTexture(icon);
 
   self:UpdateRows();
 
