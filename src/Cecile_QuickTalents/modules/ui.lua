@@ -729,6 +729,37 @@ function mod.currentClick(button)
   mod:Current(button.number);
 end
 
+function mod:Copy(row)
+  self.clipBoard = {};
+  for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
+    local talentID = self:GetTalent(mod.selectedRaid, row, talentRow);
+    table.insert(self.clipBoard,talentID);
+  end
+  self:UpdateTalentRows();
+end
+
+function mod.copyClick(button)
+  mod:AnyButtonClick();
+  mod:Copy(button.number);
+end
+
+function mod:Paste(row)
+
+  if not self.clipBoard then return; end
+  if not (#self.clipBoard>0) then return; end
+
+  for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
+    local talentID = self.clipBoard[talentRow];
+    database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, talentID);
+    self:UpdateTalentRows();
+  end
+
+end
+
+function mod.pasteClick(button)
+  mod:AnyButtonClick();
+  mod:Paste(button.number);
+end
 
 function mod:CreateBossRow(number)
 
@@ -768,11 +799,13 @@ function mod:CreateBossRow(number)
   frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
   frame.copy.number = number;
+  frame.copy:SetScript("OnClick",mod.copyClick);
   frame.copy:Hide();
 
   frame.paste = self:CreateButton(L["UI_PASTE"], L["UI_PASTE_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
   frame.paste.number = number;
+  frame.paste:SetScript("OnClick",mod.pasteClick);
   frame.paste:Hide();
 
 
@@ -953,22 +986,18 @@ function mod.expandClick()
 end
 
 function mod.upClick()
-  --mod:AnyButtonClick();
   mod:MoveSelectionBy(-1);
 end
 
 function mod.downClick()
-  --mod:AnyButtonClick();
   mod:MoveSelectionBy(1);
 end
 
 function mod.leftClick()
-  --mod:AnyButtonClick();
   mod:SelectRaidBy(-1);
 end
 
 function mod.rightClick()
-  --mod:AnyButtonClick();
   mod:SelectRaidBy(1);
 end
 
@@ -1116,6 +1145,7 @@ function mod:UpdateTalentRows()
 
     bossFrame.activate:Enable(not allTalentsCurrent);
     bossFrame.current:Enable(not allTalentsCurrent);
+    bossFrame.paste:Enable(self.clipBoard and (not(#self.clipBoard==0)));
 
   end
 end
@@ -1157,6 +1187,7 @@ function mod:CreateUI()
 
   self:SelectRaid();
   self:MoveSelection(1);
+  self.clipBoard = {};
 
   Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
 
