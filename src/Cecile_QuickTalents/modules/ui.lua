@@ -1073,6 +1073,8 @@ function mod:CreateWidgets()
   mod:CreateShortcut("CQT_LEFT_BUTTON", "LEFT", self.leftClick);
   mod:CreateShortcut("CQT_RIGHT_BUTTON", "RIGHT", self.rightClick);
   mod:CreateShortcut("CQT_SELECT_BUTTON", "ENTER", self.selectClick);
+  mod:CreateShortcut("CQT_EXPAND_BUTTON", "SPACE", self.expandClick);
+  mod:CreateShortcut("CQT_CLOSE_BUTTON", "ESCAPE", self.closeClick);
 
   for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
