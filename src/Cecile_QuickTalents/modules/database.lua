@@ -76,6 +76,7 @@ function mod:AddBoss(raid, id, name, texture)
 end
 
 function mod:GetNumRaids()
+  if not self.raids then return 0; end
   return #self.raids;
 end
 
@@ -194,6 +195,9 @@ end
 
 function mod:Load()
 
+  self.raids = {};
+  self.maxBosses = 0;
+
   self:LoadRaids();
   self:LoadMythicsPlus();
 
@@ -204,9 +208,6 @@ function mod:OnInitialize()
   debug("Database module Initialize");
 
   self:OnProfileChanged();
-
-  self.raids = {};
-  self.maxBosses = 0;
 
 end
 

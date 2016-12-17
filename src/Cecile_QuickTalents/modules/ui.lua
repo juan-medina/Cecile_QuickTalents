@@ -110,15 +110,14 @@ mod.Defaults = {
     highlightColor = {
       r = 1.0,
       g = 1.0,
-      b = 1.0,
-      a = 0.1
+      b = 1.0
     }
   }
 }
 
 --module options table
 mod.Options = {
-  order = 4,
+  order = 1,
   type = "group",
   name = L["UI_SETTINGS"],
   childGroups = "tab",
@@ -126,7 +125,7 @@ mod.Options = {
     keybindings = {
       type = "group",
       name = "Keybindings",
-      order = 2,
+      order = 1,
       args ={
         launch = {
           order = 1,
@@ -141,7 +140,227 @@ mod.Options = {
           end,
         }
       }
+    },
+
+    windowColor = {
+      order = 1,
+      name = L["UI_WINDOW_COLOR"],
+      desc = L["UI_WINDOW_COLOR_DESC"],
+      type = "color",
+      hasAlpha = true,
+      get = function()
+        return  Engine.Profile.ui.windowColor.r,
+          Engine.Profile.ui.windowColor.g,
+          Engine.Profile.ui.windowColor.b,
+          Engine.Profile.ui.windowColor.a
+      end,
+      set = function(_,r,g,b,a)
+        Engine.Profile.ui.windowColor.r = r;
+        Engine.Profile.ui.windowColor.g = g;
+        Engine.Profile.ui.windowColor.b = b;
+        Engine.Profile.ui.windowColor.a = a;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    borderColor = {
+      order = 2,
+      name = L["UI_BORDER_COLOR"],
+      desc = L["UI_BORDER_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.borderColor.r,
+          Engine.Profile.ui.borderColor.g,
+          Engine.Profile.ui.borderColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.borderColor.r = r;
+        Engine.Profile.ui.borderColor.g = g;
+        Engine.Profile.ui.borderColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    highlightColor = {
+      order = 3,
+      name = L["UI_HIGHLIGHT_COLOR"],
+      desc = L["UI_HIGHLIGHT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.highlightColor.r,
+          Engine.Profile.ui.highlightColor.g,
+          Engine.Profile.ui.highlightColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.highlightColor.r = r;
+        Engine.Profile.ui.highlightColor.g = g;
+        Engine.Profile.ui.highlightColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    selectionColor = {
+      order = 4,
+      name = L["UI_SELECTION_COLOR"],
+      desc = L["UI_SELECTION_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.selectionColor.r,
+          Engine.Profile.ui.selectionColor.g,
+          Engine.Profile.ui.selectionColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.selectionColor.r = r;
+        Engine.Profile.ui.selectionColor.g = g;
+        Engine.Profile.ui.selectionColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    cancelColor = {
+      order = 5,
+      name = L["UI_CANCEL_COLOR"],
+      desc = L["UI_CANCEL_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.cancelColor.r,
+          Engine.Profile.ui.cancelColor.g,
+          Engine.Profile.ui.cancelColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.cancelColor.r = r;
+        Engine.Profile.ui.cancelColor.g = g;
+        Engine.Profile.ui.cancelColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    extraColor = {
+      order = 6,
+      name = L["UI_EXTRA_COLOR"],
+      desc = L["UI_EXTRA_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.extraColor.r,
+          Engine.Profile.ui.extraColor.g,
+          Engine.Profile.ui.extraColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.extraColor.r = r;
+        Engine.Profile.ui.extraColor.g = g;
+        Engine.Profile.ui.extraColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    activateColor = {
+      order = 7,
+      name = L["UI_ACTIVATE_COLOR"],
+      desc = L["UI_ACTIVATE_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.activateColor.r,
+          Engine.Profile.ui.activateColor.g,
+          Engine.Profile.ui.activateColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.activateColor.r = r;
+        Engine.Profile.ui.activateColor.g = g;
+        Engine.Profile.ui.activateColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    raidColor = {
+      order = 8,
+      name = L["UI_RAID_COLOR"],
+      desc = L["UI_RAID_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.raidColor.r,
+          Engine.Profile.ui.raidColor.g,
+          Engine.Profile.ui.raidColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.raidColor.r = r;
+        Engine.Profile.ui.raidColor.g = g;
+        Engine.Profile.ui.raidColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    buttonFont = {
+      order = 9,
+      name = L["UI_BIG_BUTTON_TEXT_COLOR"],
+      desc = L["UI_BIG_BUTTON_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.buttonFont.color.r,
+          Engine.Profile.ui.buttonFont.color.g,
+          Engine.Profile.ui.buttonFont.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.buttonFont.color.r = r;
+        Engine.Profile.ui.buttonFont.color.g = g;
+        Engine.Profile.ui.buttonFont.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    buttonFontSmall = {
+      order = 10,
+      name = L["UI_SMALL_BUTTON_TEXT_COLOR"],
+      desc = L["UI_SMALL_BUTTON_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.buttonFontSmall.color.r,
+          Engine.Profile.ui.buttonFontSmall.color.g,
+          Engine.Profile.ui.buttonFontSmall.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.buttonFontSmall.color.r = r;
+        Engine.Profile.ui.buttonFontSmall.color.g = g;
+        Engine.Profile.ui.buttonFontSmall.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    bossFont = {
+      order = 11,
+      name = L["UI_BOSS_TEXT_COLOR"],
+      desc = L["UI_BOSS_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.bossFont.color.r,
+          Engine.Profile.ui.bossFont.color.g,
+          Engine.Profile.ui.bossFont.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.bossFont.color.r = r;
+        Engine.Profile.ui.bossFont.color.g = g;
+        Engine.Profile.ui.bossFont.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    statusFont = {
+      order = 12,
+      name = L["UI_STATUS_TEXT_COLOR"],
+      desc = L["UI_STATUS_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.statusFont.color.r,
+          Engine.Profile.ui.statusFont.color.g,
+          Engine.Profile.ui.statusFont.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.statusFont.color.r = r;
+        Engine.Profile.ui.statusFont.color.g = g;
+        Engine.Profile.ui.statusFont.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
     }
+
   }
 }
 
@@ -202,10 +421,17 @@ function mod:LoadProfileSettings()
   self.borderColor = Engine.Profile.ui.borderColor;
   self.highlightColor = Engine.Profile.ui.highlightColor;
   self.label = _G.GetAddOnMetadata(AddOnName, "Title")
+
+  if not (self.mainFrame==nil) then
+
+    self.mainFrame:Hide();
+    self.mainFrame = nil;
+
+  end
+
 end
 
 function mod.SaveProfileSettings()
-
 
 end
 
@@ -417,7 +643,7 @@ function mod:CreateButton(text, tooltip, width, height, color, name, parent, fon
 
   -- highlight
   frame.texHigh = frame:CreateTexture(nil, "BORDER");
-  frame.texHigh:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, self.highlightColor.a);
+  frame.texHigh:SetColorTexture(1, 1, 1, 0.1);
   frame.texHigh:SetAllPoints(true);
   frame:SetHighlightTexture(frame.texHigh);
 
@@ -1017,7 +1243,9 @@ function mod:Show()
 
 
   if(mod.mainFrame==nil) then
-    database:Load();
+    if database:GetNumRaids()==0 then
+      database:Load();
+    end
     mod:CreateUI();
   end
 
