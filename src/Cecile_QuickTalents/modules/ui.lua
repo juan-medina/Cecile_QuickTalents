@@ -2,7 +2,7 @@
 -- ui module
 
 --get the engine and create the module
-local AddOnName,Engine = ...;
+local AddOnName, Engine = ...;
 local mod = Engine.AddOn:NewModule("ui");
 
 --get the locale
@@ -11,6 +11,7 @@ local L=Engine.Locale;
 --module defaults
 mod.Defaults = {
   profile = {
+
     buttonFont = {
       name = "Cecile",
       size = 16,
@@ -122,25 +123,6 @@ mod.Options = {
   name = L["UI_SETTINGS"],
   childGroups = "tab",
   args = {
-    keybindings = {
-      type = "group",
-      name = "Keybindings",
-      order = 1,
-      args ={
-        launch = {
-          order = 1,
-          type = "keybinding",
-          name = L["UI_BINDING_LAUNCH"],
-          desc = L["UI_BINDING_LAUNCH_DESC"],
-          get = function()
-            return _G.GetBindingKey("LAUNCH_CQT");
-          end,
-          set = function(_,value)
-            mod.SafeSetBinding(value, "LAUNCH_CQT");
-          end,
-        }
-      }
-    },
 
     windowColor = {
       order = 1,
@@ -560,30 +542,6 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
-function mod.createTooltip(text, placeHolder)
-
-  local tooltipType = type(text);
-
-  if tooltipType=="table" then
-
-    for _,line in ipairs(text) do
-      if type(line)=="table" then
-        _G.GameTooltip:AddDoubleLine(unpack(line));
-      else
-        if line=="$" and placeHolder then
-          _G.GameTooltip:AddLine(placeHolder);
-        else
-          _G.GameTooltip:AddLine(line);
-        end
-      end
-    end
-
-  else
-    _G.GameTooltip:SetText(text);
-  end
-
-end
-
 function mod.buttonEnter(button)
 
   if button.tooltip and button:IsEnabled() then
@@ -595,7 +553,16 @@ function mod.buttonEnter(button)
     if tooltipType=="function" then
       button.tooltip(button);
     else
-      mod.createTooltip(button.tooltip)
+      _G.GameTooltip:AddLine(button.tooltip)
+    end
+
+    if button.shortCutTooltip then
+
+      local key = mod.bindings.GetKey(button.shortCutTooltip);
+
+      _G.GameTooltip:AddLine(" ");
+      _G.GameTooltip:AddDoubleLine(L["UI_SHORTCUT"], key,1,1,1,1,1,1);
+
     end
 
     _G.GameTooltip:Show();
@@ -629,7 +596,7 @@ function mod.isButtonEnable(button)
   return button.enabled;
 end
 
-function mod:CreateButton(text, tooltip, width, height, color, name, parent, font)
+function mod:CreateButton(text, tooltip, shortCutTooltip, width, height, color, name, parent, font)
 
   --create main frame
   local frame = self.CreateUIObject("Button",parent or self.mainFrame, name);
@@ -652,6 +619,7 @@ function mod:CreateButton(text, tooltip, width, height, color, name, parent, fon
   frame:SetScript("OnEnter", mod.buttonEnter);
   frame:SetScript("OnLeave", mod.buttonLeave);
   frame.tooltip = tooltip;
+  frame.shortCutTooltip = shortCutTooltip;
 
   frame.Enable = mod.buttonEnable;
   frame.IsEnabled = mod.isButtonEnable;
@@ -765,8 +733,14 @@ function mod:CreateWindow(title, width, height, color)
 
   frame.status = frame:CreateFontString(nil, "ARTWORK");
   frame.status:SetFontObject(self.statusFont);
-  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0)
-  frame.status:SetText(L["UI_STATUS"]);
+  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0);
+
+  local status = L["UI_STATUS"];
+  for name,key in pairs(self.bindings:GetKeys()) do
+    status = string.gsub(status,name,key);
+  end
+
+  frame.status:SetText(status);
 
   frame:SetFrameStrata("FULLSCREEN_DIALOG");
 
@@ -991,11 +965,6 @@ function mod.currentClick(button)
   mod:Current(button.number);
 end
 
-function mod.currentShortcut()
-  local button = mod.mainFrame.bosses[mod.selection].current;
-  mod.currentClick(button);
-end
-
 function mod:Copy(row)
   self.clipBoard = {};
   for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
@@ -1008,11 +977,6 @@ end
 function mod.copyClick(button)
   mod:AnyButtonClick();
   mod:Copy(button.number);
-end
-
-function mod.copyShortcut()
-  local button = mod.mainFrame.bosses[mod.selection].copy;
-  mod.copyClick(button);
 end
 
 function mod:Paste(row)
@@ -1034,12 +998,6 @@ function mod.pasteClick(button)
   mod:Paste(button.number);
 end
 
-function mod.pasteShortcut()
-  local button = mod.mainFrame.bosses[mod.selection].paste;
-  mod.pasteClick(button);
-end
-
-
 function mod.pasteTooltip()
 
   if not mod.clipBoard then return; end
@@ -1053,7 +1011,9 @@ function mod.pasteTooltip()
     talentLine = talentLine .. text;
   end
 
-  mod.createTooltip(L["UI_PASTE_TOOLTIP"], talentLine);
+  _G.GameTooltip:AddLine(L["UI_PASTE_TOOLTIP"]);
+  _G.GameTooltip:AddLine(" ");
+  _G.GameTooltip:AddLine(talentLine);
 end
 
 function mod.currentTooltip()
@@ -1066,7 +1026,9 @@ function mod.currentTooltip()
     talentLine = talentLine .. text;
   end
 
-  mod.createTooltip(L["UI_CURRENT_TOOLTIP"], talentLine);
+  _G.GameTooltip:AddLine(L["UI_CURRENT_TOOLTIP"]);
+  _G.GameTooltip:AddLine(" ");
+  _G.GameTooltip:AddLine(talentLine);
 end
 
 function mod:CreateBossRow(number)
@@ -1093,24 +1055,24 @@ function mod:CreateBossRow(number)
     self:CreateTalentButton(frame,i)
   end
 
-  frame.activate = self:CreateButton(L["UI_ACTIVATE"], L["UI_ACTIVATE_TOOLTIP"], 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
+  frame.activate = self:CreateButton(L["UI_ACTIVATE"], L["UI_ACTIVATE_TOOLTIP"], "SELECT", 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
   frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 550, 0);
   frame.activate.number = number;
   frame.activate:SetScript("OnClick",mod.activateClick);
 
-  frame.current = self:CreateButton(L["UI_CURRENT"], mod.currentTooltip, 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.current = self:CreateButton(L["UI_CURRENT"], mod.currentTooltip, "CURRENT", 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
   frame.current.number = number;
   frame.current:Hide();
   frame.current:SetScript("OnClick",mod.currentClick);
 
-  frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], "COPY", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
   frame.copy.number = number;
   frame.copy:SetScript("OnClick",mod.copyClick);
   frame.copy:Hide();
 
-  frame.paste = self:CreateButton(L["UI_PASTE"], mod.pasteTooltip, 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.paste = self:CreateButton(L["UI_PASTE"], mod.pasteTooltip, "PASTE", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
   frame.paste.number = number;
   frame.paste:SetScript("OnClick",mod.pasteClick);
@@ -1194,7 +1156,7 @@ function mod:CreateRaidTab(number)
   local width = 160;
   local height = 30;
 
-  local frame = self:CreateButton("Super Raid Instace "..number..":", nil, width, height, self.raidColor);
+  local frame = self:CreateButton("Super Raid Instace "..number..":", nil, nil, width, height, self.raidColor);
 
   local posX = gap+((width+gap)*(number-1));
   local posY = -50;
@@ -1221,11 +1183,11 @@ function mod:Hide()
   debug("hiding ui");
 
   if self.mainFrame then
+
     self.mainFrame:Hide();
 
-    for _, frame in pairs(self.mainFrame.shortCuts) do
-      _G.ClearOverrideBindings(frame);
-    end
+    self.bindings:EnableShourtcuts(false);
+
   end
 
 end
@@ -1252,9 +1214,7 @@ function mod:Show()
   self:UpdateSpecInfo();
   self.mainFrame:Show();
 
-  for name, frame in pairs(self.mainFrame.shortCuts) do
-    _G.SetOverrideBindingClick(frame, true, frame.key, name, "LeftClick");
-  end
+  self.bindings:EnableShourtcuts(true);
 
 end
 
@@ -1299,53 +1259,58 @@ function mod.expandClick()
   mod:ToggleExpand();
 end
 
-function mod.upClick()
+function mod.OnBindingUP()
   mod:MoveSelectionBy(-1);
 end
 
-function mod.downClick()
+function mod.OnBindingDOWN()
   mod:MoveSelectionBy(1);
 end
 
-function mod.leftClick()
+function mod.OnBindingLEFT()
   mod:SelectRaidBy(-1);
 end
 
-function mod.rightClick()
+function mod.OnBindingRIGHT()
   mod:SelectRaidBy(1);
 end
 
-
-function mod.selectClick()
+function mod.OnBindingSELECT()
   mod:Select();
 end
 
-function mod:CreateShortcut(key, fn)
+function mod.OnBindingEXPAND()
+  mod.expandClick();
+end
 
-  local name = "CQT_"..key.."_BUTTON"
+function mod.OnBindingCLOSE()
+  mod.closeClick();
+end
 
-  if not self.mainFrame.shortCuts then
-    self.mainFrame.shortCuts = {};
-  end
+function mod.OnBindingCOPY()
+  local button = mod.mainFrame.bosses[mod.selection].copy;
+  mod.copyClick(button);
+end
 
-  local frame = _G.CreateFrame("Button", name, self.mainFrame);
-  frame:SetScript("OnClick", fn);
-  frame:Hide();
-  frame.key=key;
+function mod.OnBindingPASTE()
+  local button = mod.mainFrame.bosses[mod.selection].paste;
+  mod.pasteClick(button);
+end
 
-  self.mainFrame.shortCuts[name]=frame;
-
+function mod.OnBindingCURRENT()
+  local button = mod.mainFrame.bosses[mod.selection].current;
+  mod.currentClick(button);
 end
 
 function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], "CLOSE", 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
-  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
+  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], "EXPAND", 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
@@ -1364,17 +1329,7 @@ function mod:CreateWidgets()
   self.mainFrame.spec:SetText("");
 
 
-  mod:CreateShortcut("UP", self.upClick);
-  mod:CreateShortcut("DOWN", self.downClick);
-  mod:CreateShortcut("LEFT", self.leftClick);
-  mod:CreateShortcut("RIGHT", self.rightClick);
-  mod:CreateShortcut("ENTER", self.selectClick);
-  mod:CreateShortcut("SPACE", self.expandClick);
-  mod:CreateShortcut("ESCAPE", self.closeClick);
-  mod:CreateShortcut("CTRL-C", self.copyShortcut);
-  mod:CreateShortcut("CTRL-V", self.pasteShortcut);
-  mod:CreateShortcut("BACKSPACE", self.currentShortcut);
-  mod:CreateShortcut("DELETE", self.currentShortcut);
+  self.bindings:CreateShortcuts(self.mainFrame, self);
 
   for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
@@ -1563,6 +1518,8 @@ function mod:OnInitialize()
 
   self:LoadProfileSettings();
 
+  self.bindings = Engine.AddOn:GetModule("bindings");
+
   mod.combat = false;
 
   --handle in combat
@@ -1588,57 +1545,5 @@ function mod.handleCommand(args)
   end
 
   return handleIt;
-
-end
-
---save & remove a binding
-function mod.SafeSetBinding(key, action)
-  if key == "" then
-    local oldkey = _G.GetBindingKey(action)
-    if oldkey then
-      _G.SetBinding(oldkey, nil)
-    end
-  else
-    _G.SetBinding(key, action)
-  end
-  _G.SaveBindings(_G.GetCurrentBindingSet())
-end
-
-
---set a default binding if no one has it
-function mod:SetDefaultBinding(key,action)
-
-  --get our binding
-  local ourkey1,ourkey2 = _G.GetBindingKey(action);
-
-  --if we dont have it
-  if (ourkey1==nil) and (ourkey2==nil) then
-
-    --get possible action for this binding since SHIFT-P or CTRL-SHIFT-P look the same
-    local possibleAction = _G.GetBindingByKey(key);
-
-    --by default we could set this binding
-    local okToSet = true;
-
-    --if any action
-    if possibleAction then
-
-      --get the action keys
-      local key1,key2 = _G.GetBindingKey(possibleAction);
-
-      --if any key match our key
-      if (key1 == key) or (key2 == key) then
-        okToSet = false;
-      end
-
-    end
-
-    --if ok to set
-    if okToSet then
-      self.SafeSetBinding(key,action);
-      debug("default binding '%s' set to '%s'", action, key);
-    end
-
-  end
 
 end
