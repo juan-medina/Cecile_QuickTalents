@@ -8,6 +8,9 @@ local mod = Engine.AddOn:NewModule("ui");
 --get the locale
 local L=Engine.Locale;
 
+-- constants
+local TOME_ID=141446;
+
 --module defaults
 mod.Defaults = {
   profile = {
@@ -733,7 +736,7 @@ function mod:CreateWindow(title, width, height, color)
 
   frame.status = frame:CreateFontString(nil, "ARTWORK");
   frame.status:SetFontObject(self.statusFont);
-  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0);
+  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 24, -0);
 
   local status = L["UI_STATUS"];
   for name,key in pairs(self.bindings:GetKeys()) do
@@ -1279,14 +1282,6 @@ function mod.OnBindingSELECT()
   mod:Select();
 end
 
-function mod.OnBindingEXPAND()
-  mod.expandClick();
-end
-
-function mod.OnBindingCLOSE()
-  mod.closeClick();
-end
-
 function mod.OnBindingCOPY()
   local button = mod.mainFrame.bosses[mod.selection].copy;
   mod.copyClick(button);
@@ -1302,15 +1297,134 @@ function mod.OnBindingCURRENT()
   mod.currentClick(button);
 end
 
+function mod:UpdateTome()
+
+  if self.mainFrame then
+    local count = _G.GetItemCount(TOME_ID);
+    self.mainFrame.tomeButton.Count:SetText(count);
+
+    local start, duration, enable = _G.GetItemCooldown(TOME_ID);
+    local cooldown = self.mainFrame.tomeButton.cooldown;
+
+    if cooldown then
+      if (start and duration) then
+        if (enable) then
+          cooldown:Hide();
+        else
+          cooldown:Show();
+        end
+        _G.CooldownFrame_Set(cooldown, start, duration, enable);
+      else
+        cooldown:Hide();
+      end
+    end
+
+  end
+
+end
+
+function mod.OnBagUpdate()
+
+  mod:UpdateTome();
+
+end
+
+function mod.onTomeEnter()
+  mod:AnyButtonClick();
+end
+
+function mod.onTomeEnter(button)
+
+  _G.GameTooltip:ClearLines()
+  _G.GameTooltip:SetOwner(button,"ANCHOR_TOPRIGHT");
+  _G.GameTooltip:SetItemByID(TOME_ID);
+
+  local key = mod.bindings.GetKey("TOME");
+
+  _G.GameTooltip:AddLine(" ");
+  _G.GameTooltip:AddDoubleLine(L["UI_SHORTCUT"], key,1,1,1,1,1,1);
+
+  _G.GameTooltip:Show();
+
+end
+
+function mod.onTomeLeave()
+
+  _G.GameTooltip:Hide();
+
+end
+
+function mod:CreateTomeButton()
+
+  local frame = self.CreateUIObject("Button",self.mainFrame,"CQT_TOME_BUTTON","ActionButtonTemplate,SecureActionButtonTemplate");
+
+  frame:Flattern();
+  frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+  frame:SetSize(24,24);
+  frame:SetPoint('BOTTOMRIGHT', self.mainFrame, 'BOTTOMRIGHT', -5, 5);
+
+  frame.cooldown:ClearAllPoints();
+
+  frame.cooldown:SetPoint('TOPLEFT', frame, 'TOPLEFT', 0, 0)
+  frame.cooldown:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', 0, 0)
+
+  frame.cooldown:SetDrawEdge(false);
+  frame.cooldown:SetSwipeColor(self.borderColor.r, self.borderColor.g, self.borderColor.b, 1);
+
+  frame:SetScript("OnEnter",mod.onTomeEnter);
+  frame:SetScript("OnLeave",mod.onTomeLeave);
+
+  local itemName, _, _, _, _, _, _, _, _, itemTexture, _ = _G.GetItemInfo(TOME_ID);
+
+  frame.icon:SetTexture(itemTexture);
+  frame:SetAttribute("type", "item");
+  frame:SetAttribute("item", itemName);
+  frame:Show();
+
+  return frame;
+
+end
+
+function mod.settingsClick()
+  mod:AnyButtonClick();
+  mod:Hide();
+  Engine.AddOn:OpenBlizzardConfig();
+end
+
+function mod:CreateSettingsButton()
+
+  local frame = self.CreateUIObject("Button",self.mainFrame,"CQT_SETTINGS_BUTTON","ActionButtonTemplate,SecureActionButtonTemplate");
+
+  frame:Flattern();
+  frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+  frame:SetSize(16,16);
+  frame:SetPoint('BOTTOMLEFT', self.mainFrame, 'BOTTOMLEFT', 3, 3);
+
+  frame.icon:SetTexture("Interface\\Worldmap\\Gear_64");
+  frame.icon:SetTexCoord(0, 0.5, 0, 0.5);
+
+  frame:SetScript("OnEnter", mod.buttonEnter);
+  frame:SetScript("OnLeave", mod.buttonLeave);
+  frame.tooltip = L["UI_SETTINGS_TOOLTIP"];
+  frame.shortCutTooltip = "SETTINGS";
+
+  frame:SetScript("OnClick", mod.settingsClick);
+
+  frame:Show();
+
+  return frame;
+
+end
+
 function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], "CLOSE", 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], "CLOSE", 100, 35, self.cancelColor, "CQT_CLOSE_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
-  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], "EXPAND", 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
+  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], "EXPAND", 20, 20, self.extraColor, "CQT_EXPAND_BUTTON", nil, self.buttonFontSmall);
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
@@ -1328,6 +1442,10 @@ function mod:CreateWidgets()
   self.mainFrame.spec:SetJustifyH("RIGHT");
   self.mainFrame.spec:SetText("");
 
+  self.mainFrame.tomeButton = self:CreateTomeButton();
+  self:UpdateTome();
+
+  self.mainFrame.settingsButton = self:CreateSettingsButton();
 
   self.bindings:CreateShortcuts(self.mainFrame, self);
 
@@ -1501,6 +1619,8 @@ function mod:CreateUI()
   self.clipBoard = {};
 
   Engine.AddOn:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED",self.PlayerSpecChange);
+  Engine.AddOn:RegisterEvent("BAG_UPDATE",self.OnBagUpdate);
+  Engine.AddOn:RegisterEvent("BAG_UPDATE_COOLDOWN",self.OnBagUpdate);
 
 end
 

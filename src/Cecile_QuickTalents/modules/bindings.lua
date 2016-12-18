@@ -21,7 +21,9 @@ mod.Defaults = {
       CLOSE = "ESCAPE",
       COPY = "CTRL-C",
       PASTE = "CTRL-V",
-      CURRENT = "BACKSPACE"
+      CURRENT = "BACKSPACE",
+      TOME = "T",
+      SETTINGS = "S"
     }
   }
 }
@@ -191,7 +193,36 @@ mod.Options = {
         Engine.Profile.bindings.keys.CURRENT = value;
         Engine.AddOn:OnCfgChange();
       end,
+    },
+
+    TOME = {
+      order = 13,
+      type = "keybinding",
+      name = L["BINDINGS_TOME"],
+      desc = L["BINDINGS_TOME_DESC"],
+      get = function()
+        return Engine.Profile.bindings.keys.TOME;
+      end,
+      set = function(_,value)
+        Engine.Profile.bindings.keys.TOME = value;
+        Engine.AddOn:OnCfgChange();
+      end,
+    },
+
+    SETTINGS = {
+      order = 14,
+      type = "keybinding",
+      name = L["BINDINGS_SETTINGS_BUTTON"],
+      desc = L["BINDINGS_SETTINGS_BUTTON_DESC"],
+      get = function()
+        return Engine.Profile.bindings.keys.SETTINGS;
+      end,
+      set = function(_,value)
+        Engine.Profile.bindings.keys.SETTINGS = value;
+        Engine.AddOn:OnCfgChange();
+      end,
     }
+
 
   }
 }
@@ -234,9 +265,16 @@ function mod:CreateShortcut(parent, name, key)
     self.shortCuts = {};
   end
 
-  local frame = _G.CreateFrame("Button", frameName, parent);
-  frame:SetScript("OnClick", self.ShortcutClick);
-  frame:Hide();
+  local frame;
+
+  if _G[frameName] and _G[frameName].GetParent and _G[frameName]:GetParent()==parent then
+    frame = _G[frameName];
+  else
+    frame = _G.CreateFrame("Button", frameName, parent);
+    frame:SetScript("OnClick", self.ShortcutClick);
+    frame:Hide();
+  end
+
   frame.name=name;
   frame.frameName=frameName;
   frame.key=key;
