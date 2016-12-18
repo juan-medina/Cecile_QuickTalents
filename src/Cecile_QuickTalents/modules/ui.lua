@@ -783,7 +783,7 @@ function mod:SaveBossTalents(raid, boss)
   debug("saving raid %d boss %d", raid, boss);
 
   for col,talentFrame in pairs(self.mainFrame.bosses[boss].talents) do
-    database:SaveTalent(raid, boss, self.activeSpec, col, talentFrame.talentID);
+    database:SaveTalent(raid, boss, self.activeSpecID, col, talentFrame.talentID);
   end
 
 end
@@ -953,7 +953,7 @@ function mod:Current(row)
   mod:AnyButtonClick();
     for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
       local currentTalent = self:GetCurrentTalent(talentRow);
-      database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, currentTalent);
+      database:SaveTalent(self.selectedRaid, row, self.activeSpecID, talentRow, currentTalent);
       self:UpdateRows();
     end
   end
@@ -988,7 +988,7 @@ function mod:Paste(row)
 
   for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
     local talentID = self.clipBoard[talentRow];
-    database:SaveTalent(self.selectedRaid, row, self.activeSpec, talentRow, talentID);
+    database:SaveTalent(self.selectedRaid, row, self.activeSpecID, talentRow, talentID);
     self:UpdateRows();
   end
 
@@ -1370,12 +1370,12 @@ end
 
 function mod:GetTalent(raid, boss, row)
 
-  local savedTalent = database:GetTalent(raid, boss, self.activeSpec, row);
+  local savedTalent = database:GetTalent(raid, boss, self.activeSpecID, row);
   local currentTalent = self:GetCurrentTalent(row);
 
   if savedTalent == nil then
 
-    database:SaveTalent(raid, boss, self.activeSpec, row, currentTalent);
+    database:SaveTalent(raid, boss, self.activeSpecID, row, currentTalent);
     return currentTalent;
 
   else
@@ -1446,9 +1446,11 @@ end
 function mod:UpdateSpecInfo()
 
   self.activeSpec = _G.GetSpecialization();
-  local _, name, _, icon  = _G.GetSpecializationInfo(self.activeSpec);
-
   if not self.activeSpec then return; end
+
+  local globalID, name, _, icon  = _G.GetSpecializationInfo(self.activeSpec);
+  self.activeSpecID = globalID;
+
   if not name then return; end
 
   local localclass, myclass = _G.UnitClass("player");
