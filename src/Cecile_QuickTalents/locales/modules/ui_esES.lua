@@ -54,3 +54,5 @@ L["UI_BOSS_TEXT_COLOR"] = "Testo de jefes"
 L["UI_BOSS_TEXT_COLOR_DESC"] = "Cambia el color de texto de los jefes"
 L["UI_STATUS_TEXT_COLOR"] = "Color Estado"
 L["UI_STATUS_TEXT_COLOR_DESC"] = "Cambia el color del texto de estado"
+L["UI_SETTINGS_TOOLTIP"] = "Abrir Configuracion"
+

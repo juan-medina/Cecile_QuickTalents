@@ -9,8 +9,7 @@ local mod = Engine.AddOn:NewModule("ui");
 local L=Engine.Locale;
 
 -- constants
---local TOME_ID=141446;
-local TOME_ID=113509;
+local TOME_ID=141446;
 
 --module defaults
 mod.Defaults = {
@@ -737,7 +736,7 @@ function mod:CreateWindow(title, width, height, color)
 
   frame.status = frame:CreateFontString(nil, "ARTWORK");
   frame.status:SetFontObject(self.statusFont);
-  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0);
+  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 24, -0);
 
   local status = L["UI_STATUS"];
   for name,key in pairs(self.bindings:GetKeys()) do
@@ -1386,6 +1385,37 @@ function mod:CreateTomeButton()
 
 end
 
+function mod.settingsClick()
+  mod:AnyButtonClick();
+  mod:Hide();
+  Engine.AddOn:OpenBlizzardConfig();
+end
+
+function mod:CreateSettingsButton()
+
+  local frame = self.CreateUIObject("Button",self.mainFrame,"CQT_SETTINGS_BUTTON","ActionButtonTemplate,SecureActionButtonTemplate");
+
+  frame:Flattern();
+  frame:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+  frame:SetSize(16,16);
+  frame:SetPoint('BOTTOMLEFT', self.mainFrame, 'BOTTOMLEFT', 3, 3);
+
+  frame.icon:SetTexture("Interface\\Worldmap\\Gear_64");
+  frame.icon:SetTexCoord(0, 0.5, 0, 0.5);
+
+  frame:SetScript("OnEnter", mod.buttonEnter);
+  frame:SetScript("OnLeave", mod.buttonLeave);
+  frame.tooltip = L["UI_SETTINGS_TOOLTIP"];
+  frame.shortCutTooltip = "SETTINGS";
+
+  frame:SetScript("OnClick", mod.settingsClick);
+
+  frame:Show();
+
+  return frame;
+
+end
+
 function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
@@ -1414,6 +1444,8 @@ function mod:CreateWidgets()
 
   self.mainFrame.tomeButton = self:CreateTomeButton();
   self:UpdateTome();
+
+  self.mainFrame.settingsButton = self:CreateSettingsButton();
 
   self.bindings:CreateShortcuts(self.mainFrame, self);
 

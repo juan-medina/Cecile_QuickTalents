@@ -35,6 +35,8 @@ L["BINDINGS_CURRENT"] = "Current Talents"
 L["BINDINGS_CURRENT_DESC"] = "Change the shorcut for set the selection to your current talents"
 L["BINDINGS_TOME"] = "Use Tome"
 L["BINDINGS_TOME_DESC"] = "Change the shorcut for use one 'Tome of the Tranquil Mind'"
+L["BINDINGS_SETTINGS_BUTTON"] = "Open Settings"
+L["BINDINGS_SETTINGS_BUTTON_DESC"] = "Change the shorcut for open the settings"
 
 
 

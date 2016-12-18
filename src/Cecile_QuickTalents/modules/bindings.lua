@@ -22,7 +22,8 @@ mod.Defaults = {
       COPY = "CTRL-C",
       PASTE = "CTRL-V",
       CURRENT = "BACKSPACE",
-      TOME = "U"
+      TOME = "T",
+      SETTINGS = "S"
     }
   }
 }
@@ -206,7 +207,22 @@ mod.Options = {
         Engine.Profile.bindings.keys.TOME = value;
         Engine.AddOn:OnCfgChange();
       end,
+    },
+
+    SETTINGS = {
+      order = 14,
+      type = "keybinding",
+      name = L["BINDINGS_SETTINGS_BUTTON"],
+      desc = L["BINDINGS_SETTINGS_BUTTON_DESC"],
+      get = function()
+        return Engine.Profile.bindings.keys.SETTINGS;
+      end,
+      set = function(_,value)
+        Engine.Profile.bindings.keys.SETTINGS = value;
+        Engine.AddOn:OnCfgChange();
+      end,
     }
+
 
   }
 }
