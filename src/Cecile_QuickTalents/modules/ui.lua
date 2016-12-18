@@ -2,7 +2,7 @@
 -- ui module
 
 --get the engine and create the module
-local AddOnName,Engine = ...;
+local AddOnName, Engine = ...;
 local mod = Engine.AddOn:NewModule("ui");
 
 --get the locale
@@ -11,11 +11,7 @@ local L=Engine.Locale;
 --module defaults
 mod.Defaults = {
   profile = {
-    windowSize = {
-      width = 700,
-      height = 550,
-      maxWidth = 820
-    },
+
     buttonFont = {
       name = "Cecile",
       size = 16,
@@ -76,6 +72,11 @@ mod.Defaults = {
           a = 1
       },
     },
+    selectionColor = {
+      r = 1,
+      g = 1,
+      b = 1
+    },
     cancelColor = {
       r = 0.7,
       g = 0.0,
@@ -110,43 +111,246 @@ mod.Defaults = {
     highlightColor = {
       r = 1.0,
       g = 1.0,
-      b = 1.0,
-      a = 0.1
+      b = 1.0
     }
   }
 }
 
 --module options table
 mod.Options = {
-  order = 4,
+  order = 1,
   type = "group",
   name = L["UI_SETTINGS"],
   childGroups = "tab",
   args = {
-    keybindings = {
-      type = "group",
-      name = "Keybindings",
+
+    windowColor = {
+      order = 1,
+      name = L["UI_WINDOW_COLOR"],
+      desc = L["UI_WINDOW_COLOR_DESC"],
+      type = "color",
+      hasAlpha = true,
+      get = function()
+        return  Engine.Profile.ui.windowColor.r,
+          Engine.Profile.ui.windowColor.g,
+          Engine.Profile.ui.windowColor.b,
+          Engine.Profile.ui.windowColor.a
+      end,
+      set = function(_,r,g,b,a)
+        Engine.Profile.ui.windowColor.r = r;
+        Engine.Profile.ui.windowColor.g = g;
+        Engine.Profile.ui.windowColor.b = b;
+        Engine.Profile.ui.windowColor.a = a;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    borderColor = {
       order = 2,
-      args ={
-        launch = {
-          order = 1,
-          type = "keybinding",
-          name = L["UI_BINDING_LAUNCH"],
-          desc = L["UI_BINDING_LAUNCH_DESC"],
-          get = function()
-            return _G.GetBindingKey("LAUNCH_CQT");
-          end,
-          set = function(_,value)
-            mod.SafeSetBinding(value, "LAUNCH_CQT");
-          end,
-        }
-      }
+      name = L["UI_BORDER_COLOR"],
+      desc = L["UI_BORDER_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.borderColor.r,
+          Engine.Profile.ui.borderColor.g,
+          Engine.Profile.ui.borderColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.borderColor.r = r;
+        Engine.Profile.ui.borderColor.g = g;
+        Engine.Profile.ui.borderColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    highlightColor = {
+      order = 3,
+      name = L["UI_HIGHLIGHT_COLOR"],
+      desc = L["UI_HIGHLIGHT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.highlightColor.r,
+          Engine.Profile.ui.highlightColor.g,
+          Engine.Profile.ui.highlightColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.highlightColor.r = r;
+        Engine.Profile.ui.highlightColor.g = g;
+        Engine.Profile.ui.highlightColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    selectionColor = {
+      order = 4,
+      name = L["UI_SELECTION_COLOR"],
+      desc = L["UI_SELECTION_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.selectionColor.r,
+          Engine.Profile.ui.selectionColor.g,
+          Engine.Profile.ui.selectionColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.selectionColor.r = r;
+        Engine.Profile.ui.selectionColor.g = g;
+        Engine.Profile.ui.selectionColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    cancelColor = {
+      order = 5,
+      name = L["UI_CANCEL_COLOR"],
+      desc = L["UI_CANCEL_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.cancelColor.r,
+          Engine.Profile.ui.cancelColor.g,
+          Engine.Profile.ui.cancelColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.cancelColor.r = r;
+        Engine.Profile.ui.cancelColor.g = g;
+        Engine.Profile.ui.cancelColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    extraColor = {
+      order = 6,
+      name = L["UI_EXTRA_COLOR"],
+      desc = L["UI_EXTRA_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.extraColor.r,
+          Engine.Profile.ui.extraColor.g,
+          Engine.Profile.ui.extraColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.extraColor.r = r;
+        Engine.Profile.ui.extraColor.g = g;
+        Engine.Profile.ui.extraColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    activateColor = {
+      order = 7,
+      name = L["UI_ACTIVATE_COLOR"],
+      desc = L["UI_ACTIVATE_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.activateColor.r,
+          Engine.Profile.ui.activateColor.g,
+          Engine.Profile.ui.activateColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.activateColor.r = r;
+        Engine.Profile.ui.activateColor.g = g;
+        Engine.Profile.ui.activateColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    raidColor = {
+      order = 8,
+      name = L["UI_RAID_COLOR"],
+      desc = L["UI_RAID_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.raidColor.r,
+          Engine.Profile.ui.raidColor.g,
+          Engine.Profile.ui.raidColor.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.raidColor.r = r;
+        Engine.Profile.ui.raidColor.g = g;
+        Engine.Profile.ui.raidColor.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    buttonFont = {
+      order = 9,
+      name = L["UI_BIG_BUTTON_TEXT_COLOR"],
+      desc = L["UI_BIG_BUTTON_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.buttonFont.color.r,
+          Engine.Profile.ui.buttonFont.color.g,
+          Engine.Profile.ui.buttonFont.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.buttonFont.color.r = r;
+        Engine.Profile.ui.buttonFont.color.g = g;
+        Engine.Profile.ui.buttonFont.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    buttonFontSmall = {
+      order = 10,
+      name = L["UI_SMALL_BUTTON_TEXT_COLOR"],
+      desc = L["UI_SMALL_BUTTON_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.buttonFontSmall.color.r,
+          Engine.Profile.ui.buttonFontSmall.color.g,
+          Engine.Profile.ui.buttonFontSmall.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.buttonFontSmall.color.r = r;
+        Engine.Profile.ui.buttonFontSmall.color.g = g;
+        Engine.Profile.ui.buttonFontSmall.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    bossFont = {
+      order = 11,
+      name = L["UI_BOSS_TEXT_COLOR"],
+      desc = L["UI_BOSS_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.bossFont.color.r,
+          Engine.Profile.ui.bossFont.color.g,
+          Engine.Profile.ui.bossFont.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.bossFont.color.r = r;
+        Engine.Profile.ui.bossFont.color.g = g;
+        Engine.Profile.ui.bossFont.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
+    },
+
+    statusFont = {
+      order = 12,
+      name = L["UI_STATUS_TEXT_COLOR"],
+      desc = L["UI_STATUS_TEXT_COLOR_DESC"],
+      type = "color",
+      get = function()
+        return  Engine.Profile.ui.statusFont.color.r,
+          Engine.Profile.ui.statusFont.color.g,
+          Engine.Profile.ui.statusFont.color.b
+      end,
+      set = function(_,r,g,b)
+        Engine.Profile.ui.statusFont.color.r = r;
+        Engine.Profile.ui.statusFont.color.g = g;
+        Engine.Profile.ui.statusFont.color.b = b;
+        Engine.AddOn:OnCfgChange();
+      end
     }
+
   }
 }
 
 --debug
 local debug = Engine.AddOn:GetModule("debug");
+
+--Version
+local Version = Engine.AddOn:GetModule("version");
 
 --database
 local database = Engine.AddOn:GetModule("database");
@@ -175,6 +379,7 @@ end
 
 function mod:LoadProfileSettings()
 
+  debug("Load Profile Settings");
 
   self.buttonFont = mod.CreateFont("buttonFont");
   self.buttonFontSmall = mod.CreateFont("buttonFontSmall");
@@ -183,8 +388,13 @@ function mod:LoadProfileSettings()
   self.bossFont = mod.CreateFont("bossFont");
   self.statusFont = mod.CreateFont("statusFont");
 
-  self.windowSize = Engine.Profile.ui.windowSize;
+  self.windowSize = {
+      normalWidth = 650,
+      normalHeight = 100,
+      maxWidth = 650+165
+  };
 
+  self.selectionColor = Engine.Profile.ui.selectionColor;
   self.cancelColor = Engine.Profile.ui.cancelColor;
   self.extraColor = Engine.Profile.ui.extraColor;
   self.raidColor = Engine.Profile.ui.raidColor;
@@ -193,10 +403,17 @@ function mod:LoadProfileSettings()
   self.borderColor = Engine.Profile.ui.borderColor;
   self.highlightColor = Engine.Profile.ui.highlightColor;
   self.label = _G.GetAddOnMetadata(AddOnName, "Title")
+
+  if not (self.mainFrame==nil) then
+
+    self.mainFrame:Hide();
+    self.mainFrame = nil;
+
+  end
+
 end
 
 function mod.SaveProfileSettings()
-
 
 end
 
@@ -325,30 +542,6 @@ function mod.CreateUIObject(class,parent,name,template)
   return frame;
 end
 
-function mod.createTooltip(text, placeHolder)
-
-  local tooltipType = type(text);
-
-  if tooltipType=="table" then
-
-    for _,line in ipairs(text) do
-      if type(line)=="table" then
-        _G.GameTooltip:AddDoubleLine(unpack(line));
-      else
-        if line=="$" and placeHolder then
-          _G.GameTooltip:AddLine(placeHolder);
-        else
-          _G.GameTooltip:AddLine(line);
-        end
-      end
-    end
-
-  else
-    _G.GameTooltip:SetText(text);
-  end
-
-end
-
 function mod.buttonEnter(button)
 
   if button.tooltip and button:IsEnabled() then
@@ -360,7 +553,16 @@ function mod.buttonEnter(button)
     if tooltipType=="function" then
       button.tooltip(button);
     else
-      mod.createTooltip(button.tooltip)
+      _G.GameTooltip:AddLine(button.tooltip)
+    end
+
+    if button.shortCutTooltip then
+
+      local key = mod.bindings.GetKey(button.shortCutTooltip);
+
+      _G.GameTooltip:AddLine(" ");
+      _G.GameTooltip:AddDoubleLine(L["UI_SHORTCUT"], key,1,1,1,1,1,1);
+
     end
 
     _G.GameTooltip:Show();
@@ -394,7 +596,7 @@ function mod.isButtonEnable(button)
   return button.enabled;
 end
 
-function mod:CreateButton(text, tooltip, width, height, color, name, parent, font)
+function mod:CreateButton(text, tooltip, shortCutTooltip, width, height, color, name, parent, font)
 
   --create main frame
   local frame = self.CreateUIObject("Button",parent or self.mainFrame, name);
@@ -408,7 +610,7 @@ function mod:CreateButton(text, tooltip, width, height, color, name, parent, fon
 
   -- highlight
   frame.texHigh = frame:CreateTexture(nil, "BORDER");
-  frame.texHigh:SetColorTexture(self.highlightColor.r, self.highlightColor.g, self.highlightColor.b, self.highlightColor.a);
+  frame.texHigh:SetColorTexture(1, 1, 1, 0.1);
   frame.texHigh:SetAllPoints(true);
   frame:SetHighlightTexture(frame.texHigh);
 
@@ -417,6 +619,7 @@ function mod:CreateButton(text, tooltip, width, height, color, name, parent, fon
   frame:SetScript("OnEnter", mod.buttonEnter);
   frame:SetScript("OnLeave", mod.buttonLeave);
   frame.tooltip = tooltip;
+  frame.shortCutTooltip = shortCutTooltip;
 
   frame.Enable = mod.buttonEnable;
   frame.IsEnabled = mod.isButtonEnable;
@@ -493,8 +696,8 @@ end
 function mod:CreateSelectionBox()
   local frame = self.CreateUIObject("Frame",self.mainFrame);
 
-  frame:SetSolidColor(1,1,1,0.5);
-  frame:CreateBorder(-2,1,1,1);
+  frame:SetSolidColor(self.selectionColor.r,self.selectionColor.g,self.selectionColor.b,0.5);
+  frame:CreateBorder(-2,self.selectionColor.b,self.selectionColor.g,self.selectionColor.b);
 
   frame:SetSize(self.windowSize.width, 44);
   frame:SetFrameStrata("BACKGROUND");
@@ -528,16 +731,16 @@ function mod:CreateWindow(title, width, height, color)
   frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 10, -10)
   frame.label:SetText(title);
 
-  frame.spec = frame:CreateFontString(nil, "ARTWORK");
-  frame.spec:SetFontObject(self.specFont);
-  frame.spec:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -120, -15)
-  frame.spec:SetJustifyH("RIGHT");
-  frame.spec:SetText(title);
-
   frame.status = frame:CreateFontString(nil, "ARTWORK");
   frame.status:SetFontObject(self.statusFont);
-  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0)
-  frame.status:SetText(L["UI_STATUS"]);
+  frame.status:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 0, -0);
+
+  local status = L["UI_STATUS"];
+  for name,key in pairs(self.bindings:GetKeys()) do
+    status = string.gsub(status,name,key);
+  end
+
+  frame.status:SetText(status);
 
   frame:SetFrameStrata("FULLSCREEN_DIALOG");
 
@@ -549,7 +752,7 @@ function mod.talentButtonEnter(button)
 
   if button.talentID then
     _G.GameTooltip:SetOwner(button);
-    _G.GameTooltip:SetTalent(button.talentID);
+    _G.GameTooltip:SetTalent(button.talentID,true);
     _G.GameTooltip:Show();
   end
 
@@ -629,7 +832,7 @@ function mod:CreateTalentFlyoutButton(parent, number)
 
   frame.icon:SetTexture("Interface\\Icons\\Temp");
   frame:Flattern();
-  frame:CreateBorder(-2,1,1,1);
+  frame:CreateBorder(-2,self.borderColor.r,self.borderColor.g,self.borderColor.b);
 
   frame:SetScript("OnEnter", self.talentButtonEnter);
   frame:SetScript("OnLeave", self.talentButtonLeave);
@@ -762,11 +965,6 @@ function mod.currentClick(button)
   mod:Current(button.number);
 end
 
-function mod.currentShortcut()
-  local button = mod.mainFrame.bosses[mod.selection].current;
-  mod.currentClick(button);
-end
-
 function mod:Copy(row)
   self.clipBoard = {};
   for talentRow,_ in pairs(self.mainFrame.bosses[row].talents) do
@@ -779,11 +977,6 @@ end
 function mod.copyClick(button)
   mod:AnyButtonClick();
   mod:Copy(button.number);
-end
-
-function mod.copyShortcut()
-  local button = mod.mainFrame.bosses[mod.selection].copy;
-  mod.copyClick(button);
 end
 
 function mod:Paste(row)
@@ -805,12 +998,6 @@ function mod.pasteClick(button)
   mod:Paste(button.number);
 end
 
-function mod.pasteShortcut()
-  local button = mod.mainFrame.bosses[mod.selection].paste;
-  mod.pasteClick(button);
-end
-
-
 function mod.pasteTooltip()
 
   if not mod.clipBoard then return; end
@@ -824,7 +1011,9 @@ function mod.pasteTooltip()
     talentLine = talentLine .. text;
   end
 
-  mod.createTooltip(L["UI_PASTE_TOOLTIP"], talentLine);
+  _G.GameTooltip:AddLine(L["UI_PASTE_TOOLTIP"]);
+  _G.GameTooltip:AddLine(" ");
+  _G.GameTooltip:AddLine(talentLine);
 end
 
 function mod.currentTooltip()
@@ -837,7 +1026,9 @@ function mod.currentTooltip()
     talentLine = talentLine .. text;
   end
 
-  mod.createTooltip(L["UI_CURRENT_TOOLTIP"], talentLine);
+  _G.GameTooltip:AddLine(L["UI_CURRENT_TOOLTIP"]);
+  _G.GameTooltip:AddLine(" ");
+  _G.GameTooltip:AddLine(talentLine);
 end
 
 function mod:CreateBossRow(number)
@@ -864,24 +1055,24 @@ function mod:CreateBossRow(number)
     self:CreateTalentButton(frame,i)
   end
 
-  frame.activate = self:CreateButton(L["UI_ACTIVATE"], L["UI_ACTIVATE_TOOLTIP"], 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
+  frame.activate = self:CreateButton(L["UI_ACTIVATE"], L["UI_ACTIVATE_TOOLTIP"], "SELECT", 65, height-16, self.activateColor, nil, frame,self.buttonFontSmall);
   frame.activate:SetPoint('TOPLEFT', frame, 'TOPLEFT', 550, 0);
   frame.activate.number = number;
   frame.activate:SetScript("OnClick",mod.activateClick);
 
-  frame.current = self:CreateButton(L["UI_CURRENT"], mod.currentTooltip, 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.current = self:CreateButton(L["UI_CURRENT"], mod.currentTooltip, "CURRENT", 65, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.current:SetPoint('TOPLEFT', frame.activate, 'TOPRIGHT', 6, 0);
   frame.current.number = number;
   frame.current:Hide();
   frame.current:SetScript("OnClick",mod.currentClick);
 
-  frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.copy = self:CreateButton(L["UI_COPY"], L["UI_COPY_TOOLTIP"], "COPY", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.copy:SetPoint('TOPLEFT', frame.current, 'TOPRIGHT', 6, 0);
   frame.copy.number = number;
   frame.copy:SetScript("OnClick",mod.copyClick);
   frame.copy:Hide();
 
-  frame.paste = self:CreateButton(L["UI_PASTE"], mod.pasteTooltip, 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
+  frame.paste = self:CreateButton(L["UI_PASTE"], mod.pasteTooltip, "PASTE", 50, height-16, self.extraColor, nil, frame,self.buttonFontSmall);
   frame.paste:SetPoint('TOPLEFT', frame.copy, 'TOPRIGHT', 6, 0);
   frame.paste.number = number;
   frame.paste:SetScript("OnClick",mod.pasteClick);
@@ -965,7 +1156,7 @@ function mod:CreateRaidTab(number)
   local width = 160;
   local height = 30;
 
-  local frame = self:CreateButton("Super Raid Instace "..number..":", nil, width, height, self.raidColor);
+  local frame = self:CreateButton("Super Raid Instace "..number..":", nil, nil, width, height, self.raidColor);
 
   local posX = gap+((width+gap)*(number-1));
   local posY = -50;
@@ -991,10 +1182,12 @@ function mod:Hide()
 
   debug("hiding ui");
 
-  self.mainFrame:Hide();
+  if self.mainFrame then
 
-  for _, frame in pairs(self.mainFrame.shortCuts) do
-    _G.ClearOverrideBindings(frame);
+    self.mainFrame:Hide();
+
+    self.bindings:EnableShourtcuts(false);
+
   end
 
 end
@@ -1003,17 +1196,25 @@ function mod:Show()
 
   debug("showing ui");
 
+  --if we are in combat display a message and return
+  if self.combat then
+
+    print(string.format(L["UI_ERROR_IN_COMBAT"],Version.Title));
+    return;
+  end
+
+
   if(mod.mainFrame==nil) then
-    database:Load();
+    if database:GetNumRaids()==0 then
+      database:Load();
+    end
     mod:CreateUI();
   end
 
   self:UpdateSpecInfo();
   self.mainFrame:Show();
 
-  for name, frame in pairs(self.mainFrame.shortCuts) do
-    _G.SetOverrideBindingClick(frame, true, frame.key, name, "LeftClick");
-  end
+  self.bindings:EnableShourtcuts(true);
 
 end
 
@@ -1058,67 +1259,77 @@ function mod.expandClick()
   mod:ToggleExpand();
 end
 
-function mod.upClick()
+function mod.OnBindingUP()
   mod:MoveSelectionBy(-1);
 end
 
-function mod.downClick()
+function mod.OnBindingDOWN()
   mod:MoveSelectionBy(1);
 end
 
-function mod.leftClick()
+function mod.OnBindingLEFT()
   mod:SelectRaidBy(-1);
 end
 
-function mod.rightClick()
+function mod.OnBindingRIGHT()
   mod:SelectRaidBy(1);
 end
 
-
-function mod.selectClick()
+function mod.OnBindingSELECT()
   mod:Select();
 end
 
-function mod:CreateShortcut(key, fn)
+function mod.OnBindingEXPAND()
+  mod.expandClick();
+end
 
-  local name = "CQT_"..key.."_BUTTON"
+function mod.OnBindingCLOSE()
+  mod.closeClick();
+end
 
-  if not self.mainFrame.shortCuts then
-    self.mainFrame.shortCuts = {};
-  end
+function mod.OnBindingCOPY()
+  local button = mod.mainFrame.bosses[mod.selection].copy;
+  mod.copyClick(button);
+end
 
-  local frame = _G.CreateFrame("Button", name, self.mainFrame);
-  frame:SetScript("OnClick", fn);
-  frame:Hide();
-  frame.key=key;
+function mod.OnBindingPASTE()
+  local button = mod.mainFrame.bosses[mod.selection].paste;
+  mod.pasteClick(button);
+end
 
-  self.mainFrame.shortCuts[name]=frame;
-
+function mod.OnBindingCURRENT()
+  local button = mod.mainFrame.bosses[mod.selection].current;
+  mod.currentClick(button);
 end
 
 function mod:CreateWidgets()
 
   self.mainFrame = mod:CreateWindow(self.label, self.windowSize.width, self.windowSize.height, self.windowColor);
 
-  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
+  self.mainFrame.closeButton = self:CreateButton(L["UI_CLOSE"], L["UI_CLOSE_TOOLTIP"], "CLOSE", 100, 35, self.cancelColor, "CQT_CANCEL_BUTTON");
   self.mainFrame.closeButton:SetPoint('TOPRIGHT', self.mainFrame, 'TOPRIGHT', -4, -4);
   self.mainFrame.closeButton:SetScript("OnClick", self.closeClick);
 
-  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
+  self.mainFrame.expandButton = self:CreateButton(">>", L["UI_EXPAND_PLUS_DESC"], "EXPAND", 20, 20, self.extraColor, nil, nil, self.buttonFontSmall);
   self.mainFrame.expandButton:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'BOTTOMRIGHT', 0, -8);
   self.mainFrame.expandButton:SetScript("OnClick", self.expandClick);
 
-  mod:CreateShortcut("UP", self.upClick);
-  mod:CreateShortcut("DOWN", self.downClick);
-  mod:CreateShortcut("LEFT", self.leftClick);
-  mod:CreateShortcut("RIGHT", self.rightClick);
-  mod:CreateShortcut("ENTER", self.selectClick);
-  mod:CreateShortcut("SPACE", self.expandClick);
-  mod:CreateShortcut("ESCAPE", self.closeClick);
-  mod:CreateShortcut("CTRL-C", self.copyShortcut);
-  mod:CreateShortcut("CTRL-V", self.pasteShortcut);
-  mod:CreateShortcut("BACKSPACE", self.currentShortcut);
-  mod:CreateShortcut("DELETE", self.currentShortcut);
+  self.mainFrame.specIcon = self.CreateUIObject("Button",self.mainFrame,nil,"ActionButtonTemplate");
+  self.mainFrame.specIcon:Flattern();
+  self.mainFrame.specIcon:CreateBorder(-2,self.borderColor.r,self.borderColor.r,self.borderColor.r);
+  self.mainFrame.specIcon:SetSize(32,32);
+  self.mainFrame.specIcon:SetPoint('TOPRIGHT', self.mainFrame.closeButton, 'TOPLEFT', -5, 0);
+  self.mainFrame.specIcon.icon:SetTexture("Interface\\Icons\\Temp");
+  self.mainFrame.specIcon:Show();
+
+  self.mainFrame.spec = self.mainFrame:CreateFontString(nil, "ARTWORK");
+  self.mainFrame.spec:SetFontObject(self.specFont);
+  self.mainFrame.spec:SetPoint('BOTTOMRIGHT', self.mainFrame.specIcon, 'BOTTOMLEFT', -5, 0)
+  self.mainFrame.spec:SetJustifyH("RIGHT");
+  self.mainFrame.spec:SetText("");
+
+
+  self.bindings:CreateShortcuts(self.mainFrame, self);
 
   for i=1,database:GetMaxBosses() do
     self:CreateBossRow(i);
@@ -1243,9 +1454,10 @@ function mod:UpdateSpecInfo()
   local localclass, myclass = _G.UnitClass("player");
 
   local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
-  local text = _G.format(classColor..'%s %s|r |T%s:14:14:0:0:64:64:4:60:4:60|t', name, localclass, icon);
+  local text = _G.format(classColor..'%s %s|r', name, localclass);
 
   self.mainFrame.spec:SetText(text);
+  self.mainFrame.specIcon.icon:SetTexture(icon);
 
   self:UpdateRows();
 
@@ -1261,6 +1473,21 @@ end
 
 function mod:CreateUI()
 
+  local numtabs = database:GetNumRaids();
+
+  self.windowSize.width = 6 + (numtabs*160) + ( (numtabs-1)*6) + 32;
+
+  if self.windowSize.width < self.windowSize.normalWidth then
+    self.windowSize.width = self.windowSize.normalWidth;
+  end
+
+  if self.windowSize.width > self.windowSize.maxWidth then
+    self.windowSize.maxWidth = self.windowSize.width;
+  end
+
+  local numbosses = database:GetMaxBosses();
+  self.windowSize.height = self.windowSize.normalHeight+(numbosses*45)+40;
+
   self:CreateWidgets();
 
   for index,raid in pairs(database:GetRaids()) do
@@ -1275,11 +1502,29 @@ function mod:CreateUI()
 
 end
 
+--event when we enter combat
+function mod.InCombat()
+  mod.combat = true;
+  mod:Hide();
+end
+
+--event when we exit combat
+function mod.OutOfCombat()
+  mod.combat = false;
+end
 function mod:OnInitialize()
 
   debug("UI module Initialize");
 
   self:LoadProfileSettings();
+
+  self.bindings = Engine.AddOn:GetModule("bindings");
+
+  mod.combat = false;
+
+  --handle in combat
+  Engine.AddOn:RegisterEvent("PLAYER_REGEN_ENABLED",self.OutOfCombat);
+  Engine.AddOn:RegisterEvent("PLAYER_REGEN_DISABLED",self.InCombat);
 
 end
 
@@ -1300,57 +1545,5 @@ function mod.handleCommand(args)
   end
 
   return handleIt;
-
-end
-
---save & remove a binding
-function mod.SafeSetBinding(key, action)
-  if key == "" then
-    local oldkey = _G.GetBindingKey(action)
-    if oldkey then
-      _G.SetBinding(oldkey, nil)
-    end
-  else
-    _G.SetBinding(key, action)
-  end
-  _G.SaveBindings(_G.GetCurrentBindingSet())
-end
-
-
---set a default binding if no one has it
-function mod:SetDefaultBinding(key,action)
-
-  --get our binding
-  local ourkey1,ourkey2 = _G.GetBindingKey(action);
-
-  --if we dont have it
-  if (ourkey1==nil) and (ourkey2==nil) then
-
-    --get possible action for this binding since SHIFT-P or CTRL-SHIFT-P look the same
-    local possibleAction = _G.GetBindingByKey(key);
-
-    --by default we could set this binding
-    local okToSet = true;
-
-    --if any action
-    if possibleAction then
-
-      --get the action keys
-      local key1,key2 = _G.GetBindingKey(possibleAction);
-
-      --if any key match our key
-      if (key1 == key) or (key2 == key) then
-        okToSet = false;
-      end
-
-    end
-
-    --if ok to set
-    if okToSet then
-      self.SafeSetBinding(key,action);
-      debug("default binding '%s' set to '%s'", action, key);
-    end
-
-  end
 
 end

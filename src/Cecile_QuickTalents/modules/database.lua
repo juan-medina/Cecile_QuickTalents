@@ -6,7 +6,7 @@ local Engine = select(2,...);
 local mod = Engine.AddOn:NewModule("database");
 
 --get the locale
---local L=Engine.Locale;
+local L=Engine.Locale;
 
 
 --module defaults
@@ -76,6 +76,7 @@ function mod:AddBoss(raid, id, name, texture)
 end
 
 function mod:GetNumRaids()
+  if not self.raids then return 0; end
   return #self.raids;
 end
 
@@ -150,7 +151,7 @@ function mod:LoadMythicsPlus()
     self:CreateMythicsPlusTable();
   end
 
-  local raid = self:AddRaid(99999, "Mythic +");
+  local raid = self:AddRaid(99999, L["DATABASE_MYTHIC_PLUS"]);
 
   for indexInstance=1,25 do
 
@@ -194,6 +195,9 @@ end
 
 function mod:Load()
 
+  self.raids = {};
+  self.maxBosses = 0;
+
   self:LoadRaids();
   self:LoadMythicsPlus();
 
@@ -204,9 +208,6 @@ function mod:OnInitialize()
   debug("Database module Initialize");
 
   self:OnProfileChanged();
-
-  self.raids = {};
-  self.maxBosses = 0;
 
 end
 
