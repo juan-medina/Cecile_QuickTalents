@@ -1656,6 +1656,8 @@ function mod.handleCommand(args)
   --has this module handle the command?
   local handleIt = false;
 
+  args = string.lower(args);
+
   --if the command is 'ui'
   if args=="ui" or args=="show" then
 
