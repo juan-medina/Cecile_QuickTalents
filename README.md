@@ -23,7 +23,7 @@ To open the UI use the Keybinding define in this settings or type:
 
 **/cqt ui**
 
-![alt tag](https://raw.githubusercontent.com/cecile/Cecile_QuickTalents/master/img/Cecile_QuickTalents_1.jpg)
+![alt tag](https://raw.githubusercontent.com/cecile/Cecile_QuickTalents/master/imgs/Cecile_QuickTalents_1.jpg)
 
 #Created By:
 
