@@ -2,7 +2,7 @@
 ## Title: |cffffffffCecile|r_|cfffff569QuickTalents|r
 ## Notes: Quick Talent helper
 ## Author: Cecile
-## Version: 1.0.1.beta
+## Version: 1.0.2.release
 ## SavedVariables: Cecile_QuickTalentsDB
 ## OptionalDeps:
 

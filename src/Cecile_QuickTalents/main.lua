@@ -35,12 +35,11 @@ function AddOn:PLAYER_ENTERING_WORLD()
   _G.BINDING_HEADER_Cecile_QuickTalents = Version.Title
   _G.BINDING_NAME_LAUNCH_CQL = L["BINDING_DESC"]
 
-  --get ui
-  local ui = AddOn:GetModule("ui");
+  --get binding
+  local bindings = AddOn:GetModule("bindings");
 
-  --set the default binding
-  ui:SetDefaultBinding("CTRL-SHIFT-N","LAUNCH_CQT");
-
+  --set the default bindings
+  bindings:SetDefaultBinding("CTRL-SHIFT-N","LAUNCH_CQT");
 
   --register blizzard options
   AddOn:RegisterBlizzardOptions();

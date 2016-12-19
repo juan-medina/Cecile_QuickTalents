@@ -3,4 +3,5 @@
 	<Script file="utils/version.lua"/>
   <Script file="database.lua"/>
   <Script file="ui.lua"/>
+  <Script file="bindings.lua"/>
 </Ui>
