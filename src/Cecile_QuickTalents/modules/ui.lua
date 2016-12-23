@@ -559,7 +559,7 @@ function mod.buttonEnter(button)
       _G.GameTooltip:AddLine(button.tooltip)
     end
 
-    if button.shortCutTooltip then
+    if button.shortCutTooltip and (not mod.bindings.IsShortutsDisabled()) then
 
       local key = mod.bindings.GetKey(button.shortCutTooltip);
 
@@ -637,8 +637,8 @@ function mod:MoveSelection(pos)
   local height = 45;
   local startY = 87 + ((pos -1) * height);
 
-  self.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
-  self.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
+  self.mainFrame.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
+  self.mainFrame.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
   self.selection = pos;
 
 end
@@ -1225,6 +1225,13 @@ function mod:Show()
   end
 
   self:UpdateSpecInfo();
+
+  if self.bindings:IsShortutsDisabled() then
+    self.mainFrame.selectionBox:Hide();
+  else
+    self.mainFrame.selectionBox:Show();
+  end
+
   self.mainFrame:Show();
 
   self.bindings:EnableShourtcuts(true);
@@ -1469,7 +1476,7 @@ function mod:CreateWidgets()
 
   self.mainFrame.talentFlyout = self:CreateTalentFlyout();
 
-  self.selectionBox = self:CreateSelectionBox();
+  self.mainFrame.selectionBox = self:CreateSelectionBox();
 
   self.expanded = false;
 
