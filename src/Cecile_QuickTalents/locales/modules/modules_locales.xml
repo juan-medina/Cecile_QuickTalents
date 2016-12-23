@@ -9,4 +9,6 @@
   <Script file="database_esES.lua"/>
   <Script file="bindings_enUS.lua"/>
   <Script file="bindings_esES.lua"/>
+  <Script file="miscellaneous_enUS.lua"/>
+  <Script file="miscellaneous_esES.lua"/>
 </Ui>

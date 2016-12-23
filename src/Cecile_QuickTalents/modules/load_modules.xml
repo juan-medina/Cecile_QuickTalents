@@ -4,4 +4,5 @@
   <Script file="database.lua"/>
   <Script file="ui.lua"/>
   <Script file="bindings.lua"/>
+  <Script file="miscellaneous.lua"/>
 </Ui>

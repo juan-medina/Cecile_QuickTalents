@@ -811,7 +811,9 @@ end
 
 function mod:AnyButtonClick()
   _G.PlaySound("igMainMenuOption");
-  self.mainFrame.talentFlyout:Hide();
+  if self.mainFrame then
+    self.mainFrame.talentFlyout:Hide();
+  end
 end
 function mod.talentButtonClick(button)
   mod:AnyButtonClick();
@@ -1195,6 +1197,14 @@ function mod:Hide()
 
 end
 
+function mod:Toogle()
+  if self.mainFrame and self.mainFrame:IsShown() then
+    self:Hide();
+  else
+    self:Show();
+  end
+end
+
 function mod:Show()
 
   debug("showing ui");
@@ -1571,15 +1581,18 @@ function mod:UpdateSpecInfo()
 
   if not name then return; end
 
-  local localclass, myclass = _G.UnitClass("player");
+  if self.mainFrame then
 
-  local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
-  local text = _G.format(classColor..'%s %s|r', name, localclass);
+    local localclass, myclass = _G.UnitClass("player");
 
-  self.mainFrame.spec:SetText(text);
-  self.mainFrame.specIcon.icon:SetTexture(icon);
+    local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
+    local text = _G.format(classColor..'%s %s|r', name, localclass);
 
-  self:UpdateRows();
+    self.mainFrame.spec:SetText(text);
+    self.mainFrame.specIcon.icon:SetTexture(icon);
+
+    self:UpdateRows();
+  end
 
 end
 
@@ -1661,7 +1674,7 @@ function mod.handleCommand(args)
   --if the command is 'ui'
   if args=="ui" or args=="show" then
 
-    mod:Show();
+    mod:Toogle();
 
     --this module has handle the command
     handleIt = true;

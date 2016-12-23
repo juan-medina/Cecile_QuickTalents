@@ -21,7 +21,7 @@ L["PROFILES"] = "Perfiles"
 L["BINDING_DESC"] = "Abrir Talentos Rápidos"
 L["ABOUT"] = [[|cff0070deAgradecimientos especiales para:|r
 
-Thereplicant, Abetø, Tárl, Krannt.
+Thereplicant, Abetø, Rebrn, Tárl, Krannt.
 
 |cff0070deUso:|r
 
@@ -40,5 +40,9 @@ Cualquier comentario o sugerencia es bienvenido en las web abituales de AddOns.
 Para abir el interfaz puedes usar el atajo de teclado definido en esta opciones o escribir:
 
 |cff82c5ff/cqt ui|r
+
+Este AddOn incluye un boton en el minimapa, que puede desactivarse en las opciones.
+
+Si usas algun databroker puedes habilitar un panel adicional para acceso rapido.
 
 ]]

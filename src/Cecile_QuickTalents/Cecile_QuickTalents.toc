@@ -1,10 +1,11 @@
-## Interface: 70000
+## Interface: 70100
 ## Title: |cffffffffCecile|r_|cfffff569QuickTalents|r
 ## Notes: Quick Talent helper
 ## Author: Cecile
 ## Version: 1.0.2.release
 ## SavedVariables: Cecile_QuickTalentsDB
 ## OptionalDeps:
+## X-Icon: Interface\AddOns\Cecile_QuickTalents\media\icons\minimap
 
 libs\load_libs.xml
 locales\load_locales.xml

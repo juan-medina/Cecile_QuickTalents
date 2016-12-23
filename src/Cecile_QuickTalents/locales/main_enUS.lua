@@ -19,7 +19,7 @@ L["PROFILES"] = "Profiles"
 L["BINDING_DESC"] = "Open Quick Talents"
 L["ABOUT"] = [[|cff0070deSpecial thanks to:|r
 
-Thereplicant, Abetø, Tárl, Krannt.
+Thereplicant, Abetø, Rebrn, Tárl, Krannt.
 
 |cff0070deUsage:|r
 
@@ -38,5 +38,9 @@ Any comments or suggestions are welcome in the usual AddOns websites.
 To open the UI use the Keybinding define in this settings or type:
 
 |cff82c5ff/cqt ui|r
+
+This AddOn include a minimap button than could be toggle off in the options.
+
+If you use a compatible databroker you could add a panel for another quick access.
 
 ]]

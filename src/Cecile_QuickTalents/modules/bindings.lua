@@ -30,7 +30,7 @@ mod.Defaults = {
 
 --module options table
 mod.Options = {
-  order = 1,
+  order = 2,
   type = "group",
   name = L["BINDINGS_SETTINGS"],
   childGroups = "tab",
