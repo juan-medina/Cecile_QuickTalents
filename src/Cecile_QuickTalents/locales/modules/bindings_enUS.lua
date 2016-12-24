@@ -37,7 +37,11 @@ L["BINDINGS_TOME"] = "Use Tome"
 L["BINDINGS_TOME_DESC"] = "Change the shorcut for use one 'Tome of the Tranquil Mind'"
 L["BINDINGS_SETTINGS_BUTTON"] = "Open Settings"
 L["BINDINGS_SETTINGS_BUTTON_DESC"] = "Change the shorcut for open the settings"
+L["BINDINGS_HELP"] = [[Shortcuts are only usable when the UI window is show for a quick way to switch your talents and cand be disabled anytime.
 
+]]
+L["BINDINGS_DISABLE"] = "Disable Shortcuts"
+L["BINDINGS_DISABLE_DESC"] = "Toggle to disable all shortcuts"
 
 
 

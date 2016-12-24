@@ -1,5 +1,5 @@
 # Cecile_QuickTalents
-Quick Talent helper
+Quick Talent helper World of Warcraft AddOn
 
 #Special thanks to:
 
@@ -22,6 +22,12 @@ Any comments or suggestions are welcome in the usual AddOns websites.
 To open the UI use the Keybinding define in this settings or type:
 
 **/cqt ui**
+
+This AddOn include a minimap button than could be toggle off in the options.
+
+If you use a compatible databroker you could add a panel for another quick access.
+
+Additionally a new button, for quick access, will be add to blizzard default talents window.
 
 ![alt tag](https://raw.githubusercontent.com/cecile/Cecile_QuickTalents/master/imgs/Cecile_QuickTalents_1.jpg)
 
