@@ -16,6 +16,10 @@ mod.Defaults = {
     },
     tooltip = {
       showActiveInactive = true
+    },
+
+    talentsPanel = {
+      addButon = true
     }
   }
 }
@@ -56,6 +60,19 @@ mod.Options = {
       set = function(_, value)
         Engine.Profile.miscellaneous.tooltip.showActiveInactive = value;
       end
+    },
+
+    addButon = {
+      order = 4,
+      type = "toggle",
+      name = L["MISCELLANEUS_ADD_TALENTS_PANEL_BUTTON"],
+      desc = L["MISCELLANEUS_ADD_TALENTS_PANEL_BUTTON_DESC"],
+      get = function()
+        return Engine.Profile.miscellaneous.talentsPanel.addButon;
+      end,
+      set = function(_, value)
+        Engine.Profile.miscellaneous.talentsPanel.addButon = value;
+      end
     }
 
   }
@@ -70,6 +87,62 @@ local database = Engine.AddOn:GetModule("database");
 --database
 local ui = Engine.AddOn:GetModule("ui");
 
+function mod.onAddLoad(_, name)
+
+  if name == "Blizzard_TalentUI" then
+    _G.PlayerTalentFrameTalents:HookScript("OnShow", mod.hookTalentsFrame);
+    _G.PlayerTalentFrameTalents:HookScript("OnHide", mod.hookTalentsFrame);
+    Engine.AddOn:UnregisterEvent("ADDON_LOADED");
+  end
+
+end
+
+function mod.talentWindowButtonOnEnter()
+
+  local button = _G.CQT_TALENT_FRAME_BUTTON;
+  local tooltip = _G.GameTooltip;
+
+  tooltip:SetOwner(button,"ANCHOR_BOTTOMRIGHT");
+  mod.OnTooltipShow(tooltip);
+  tooltip:Show();
+
+end
+
+function mod.talentWindowButtonOnLeave()
+  _G.GameTooltip:Hide();
+end
+
+function mod.hookTalentsFrame()
+
+  local parent = _G.PlayerTalentFrame;
+
+  if not parent.cqtButton then
+
+    local button = ui.CreateUIObject("Button", parent,  "CQT_TALENT_FRAME_BUTTON", "ActionButtonTemplate,SecureActionButtonTemplate");
+
+    button:Flattern();
+    button:CreateBorder(-2,ui.borderColor.r,ui.borderColor.r,ui.borderColor.r);
+    button:SetSize(32,32);
+    button.icon:SetTexture(mod.icon_file);
+
+    button:SetScript("OnEnter", mod.talentWindowButtonOnEnter);
+    button:SetScript("OnLeave", mod.talentWindowButtonOnLeave);
+    button:SetScript("OnClick", mod.buttonClick);
+    button:RegisterForClicks("LeftButtonDown","RightButtonDown");
+
+    parent.cqtButton = button;
+  end
+
+  parent.cqtButton:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -2, -2);
+
+  if _G.PlayerTalentFrameTalents:IsShown() and Engine.Profile.miscellaneous.talentsPanel.addButon then
+    parent.cqtButton:Show();
+  else
+    parent.cqtButton:Hide();
+  end
+
+end
+
 function mod:OnInitialize()
 
   debug("miscellaneous module Initialize");
@@ -78,6 +151,7 @@ function mod:OnInitialize()
 
   self:OnProfileChanged();
 
+  Engine.AddOn:RegisterEvent("ADDON_LOADED", self.onAddLoad);
 end
 
 function mod.LoadProfileSettings()
@@ -102,7 +176,7 @@ function mod:OnProfileChanged()
 
 end
 
-function mod:BuildTalentsTooltip(tooltip)
+function mod.BuildTalentsTooltip(tooltip)
 
   if database:GetNumRaids()==0 then
     database:Load();
@@ -140,16 +214,34 @@ end
 
 function mod.OnTooltipShow(tooltip)
 
+  tooltip:ClearLines();
   tooltip:AddLine(mod.label, 1, 1, 1);
   tooltip:AddLine(" ");
 
   if Engine.Profile.miscellaneous.tooltip.showActiveInactive then
-    mod:BuildTalentsTooltip(tooltip);
+    mod.BuildTalentsTooltip(tooltip);
   end
 
   tooltip:AddLine(" ");
   tooltip:AddLine(L["MISCELLANEUS_MINIMAP_HELP_1"]);
   tooltip:AddLine(L["MISCELLANEUS_MINIMAP_HELP_2"]);
+
+end
+
+function mod.buttonClick(_, button)
+
+  if (button == "LeftButton") then
+    Engine.AddOn.HandleCommands("ui");
+  elseif (button == "RightButton") then
+    Engine.AddOn.HandleCommands();
+  end
+
+   ui:AnyButtonClick();
+  _G.GameTooltip:Hide()
+
+  if _G.PlayerTalentFrame_Close then
+    _G.PlayerTalentFrame_Close();
+  end
 
 end
 
@@ -159,7 +251,7 @@ function mod:SetupMinimapIcon()
 
   --get version
   self.label = string.format(L["MISCELLANEUS_MINIMAP_LABEL"],_G.GetAddOnMetadata(Engine.Name, "Title"),_G.GetAddOnMetadata(Engine.Name, "Version"));
-  local icon_file = _G.GetAddOnMetadata(Engine.Name, "X-Icon");
+  self.icon_file = _G.GetAddOnMetadata(Engine.Name, "X-Icon");
 
   --get libraries
   local LDB = LibStub("LibDataBroker-1.1", true);
@@ -169,20 +261,10 @@ function mod:SetupMinimapIcon()
 
     local databroker = LDB:NewDataObject(Engine.Name, {
       type = "data source",
-      icon = icon_file,
+      icon = self.icon_file,
       text = nil,
       HotCornerIgnore = true,
-      OnClick = function ( _ , button)
-
-        if (button == "LeftButton") then
-          Engine.AddOn.HandleCommands("ui");
-        elseif (button == "RightButton") then
-          Engine.AddOn.HandleCommands();
-        end
-         ui:AnyButtonClick();
-        _G.GameTooltip:Hide();
-
-      end,
+      OnClick = mod.buttonClick,
       OnTooltipShow = mod.OnTooltipShow,
     })
 

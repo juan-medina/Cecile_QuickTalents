@@ -43,4 +43,6 @@ This AddOn include a minimap button than could be toggle off in the options.
 
 If you use a compatible databroker you could add a panel for another quick access.
 
+Additionally a new button, for quick access, will be add to blizzard default talents window.
+
 ]]

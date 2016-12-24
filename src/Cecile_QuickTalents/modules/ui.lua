@@ -1232,6 +1232,10 @@ function mod:Show()
     self.mainFrame.selectionBox:Show();
   end
 
+  if _G.InterfaceOptionsFrame then
+    _G.InterfaceOptionsFrame:Hide();
+  end
+
   self.mainFrame:Show();
 
   self.bindings:EnableShourtcuts(true);

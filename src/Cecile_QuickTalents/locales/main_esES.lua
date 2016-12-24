@@ -45,4 +45,6 @@ Este AddOn incluye un boton en el minimapa, que puede desactivarse en las opcion
 
 Si usas algun databroker puedes habilitar un panel adicional para acceso rapido.
 
+Adicionalmente un nuevo boton, para acceso rapido, sera añadido en la ventana de talentos de blizzard.
+
 ]]
