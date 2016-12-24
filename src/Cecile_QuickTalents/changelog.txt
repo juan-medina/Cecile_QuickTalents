@@ -1,0 +1,8 @@
+1.1.0.release
+- Bump TOC
+- Added databroker support
+- Added a Minimap button
+- Added a Quick Access button in blizzard talents panel
+- Added options to disable shortcuts
+1.0.2.release
+- Fist public release
