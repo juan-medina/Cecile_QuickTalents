@@ -163,7 +163,10 @@ function AddOn:RegisterBlizzardOptions()
 end
 
 function AddOn:OpenBlizzardConfig()
-  --get version
+
+  self:GetModule("ui"):Hide();
+
+    --get version
   local Version = self:GetModule("version");
 
   --open config twice (yes, if not does not work always)
@@ -237,6 +240,8 @@ function AddOn:NotifyChange(object)
 end
 
 function AddOn:OnCfgChange()
+
+  self:GetModule("ui"):Hide();
 
   self:NotifyChange(self);
 

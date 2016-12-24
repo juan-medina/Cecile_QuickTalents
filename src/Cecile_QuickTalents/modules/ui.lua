@@ -559,7 +559,7 @@ function mod.buttonEnter(button)
       _G.GameTooltip:AddLine(button.tooltip)
     end
 
-    if button.shortCutTooltip then
+    if button.shortCutTooltip and (not mod.bindings.IsShortutsDisabled()) then
 
       local key = mod.bindings.GetKey(button.shortCutTooltip);
 
@@ -637,8 +637,8 @@ function mod:MoveSelection(pos)
   local height = 45;
   local startY = 87 + ((pos -1) * height);
 
-  self.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
-  self.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
+  self.mainFrame.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
+  self.mainFrame.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
   self.selection = pos;
 
 end
@@ -811,7 +811,9 @@ end
 
 function mod:AnyButtonClick()
   _G.PlaySound("igMainMenuOption");
-  self.mainFrame.talentFlyout:Hide();
+  if self.mainFrame then
+    self.mainFrame.talentFlyout:Hide();
+  end
 end
 function mod.talentButtonClick(button)
   mod:AnyButtonClick();
@@ -1195,6 +1197,14 @@ function mod:Hide()
 
 end
 
+function mod:Toogle()
+  if self.mainFrame and self.mainFrame:IsShown() then
+    self:Hide();
+  else
+    self:Show();
+  end
+end
+
 function mod:Show()
 
   debug("showing ui");
@@ -1215,6 +1225,17 @@ function mod:Show()
   end
 
   self:UpdateSpecInfo();
+
+  if self.bindings:IsShortutsDisabled() then
+    self.mainFrame.selectionBox:Hide();
+  else
+    self.mainFrame.selectionBox:Show();
+  end
+
+  if _G.InterfaceOptionsFrame then
+    _G.InterfaceOptionsFrame:Hide();
+  end
+
   self.mainFrame:Show();
 
   self.bindings:EnableShourtcuts(true);
@@ -1459,7 +1480,7 @@ function mod:CreateWidgets()
 
   self.mainFrame.talentFlyout = self:CreateTalentFlyout();
 
-  self.selectionBox = self:CreateSelectionBox();
+  self.mainFrame.selectionBox = self:CreateSelectionBox();
 
   self.expanded = false;
 
@@ -1571,15 +1592,18 @@ function mod:UpdateSpecInfo()
 
   if not name then return; end
 
-  local localclass, myclass = _G.UnitClass("player");
+  if self.mainFrame then
 
-  local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
-  local text = _G.format(classColor..'%s %s|r', name, localclass);
+    local localclass, myclass = _G.UnitClass("player");
 
-  self.mainFrame.spec:SetText(text);
-  self.mainFrame.specIcon.icon:SetTexture(icon);
+    local classColor = "|c".._G["RAID_CLASS_COLORS"][myclass].colorStr;
+    local text = _G.format(classColor..'%s %s|r', name, localclass);
 
-  self:UpdateRows();
+    self.mainFrame.spec:SetText(text);
+    self.mainFrame.specIcon.icon:SetTexture(icon);
+
+    self:UpdateRows();
+  end
 
 end
 
@@ -1661,7 +1685,7 @@ function mod.handleCommand(args)
   --if the command is 'ui'
   if args=="ui" or args=="show" then
 
-    mod:Show();
+    mod:Toogle();
 
     --this module has handle the command
     handleIt = true;

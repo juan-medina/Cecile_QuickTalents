@@ -24,13 +24,17 @@ mod.Defaults = {
       CURRENT = "BACKSPACE",
       TOME = "T",
       SETTINGS = "S"
+    },
+
+    shortCuts = {
+      disableAll = false,
     }
   }
 }
 
 --module options table
 mod.Options = {
-  order = 1,
+  order = 2,
   type = "group",
   name = L["BINDINGS_SETTINGS"],
   childGroups = "tab",
@@ -55,8 +59,39 @@ mod.Options = {
       name = L["BINDINGS_SHORTCUTS"]
     },
 
-    UP = {
+    help = {
       order = 3,
+      type = "description",
+      name = L["BINDINGS_HELP"],
+      width = "full",
+    },
+
+    disableAll = {
+      order = 4,
+      type = "toggle",
+      name = L["BINDINGS_DISABLE"],
+      desc = L["BINDINGS_DISABLE_DESC"],
+      get = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end,
+      set = function(_,value)
+
+        Engine.Profile.bindings.shortCuts.disableAll = value;
+
+        Engine.AddOn:OnCfgChange();
+
+      end,
+    },
+
+    filler = {
+      order = 5,
+      type = "description",
+      name = "     ",
+      width = "full",
+    },
+
+    UP = {
+      order = 13,
       type = "keybinding",
       name = L["BINDINGS_UP"],
       desc = L["BINDINGS_UP_DESC"],
@@ -67,10 +102,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.UP = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     DOWN = {
-      order = 4,
+      order = 14,
       type = "keybinding",
       name = L["BINDINGS_DOWN"],
       desc = L["BINDINGS_DOWN_DESC"],
@@ -81,10 +119,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.DOWN = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     LEFT = {
-      order = 5,
+      order = 15,
       type = "keybinding",
       name = L["BINDINGS_LEFT"],
       desc = L["BINDINGS_LEFT_DESC"],
@@ -95,10 +136,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.LEFT = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     RIGHT = {
-      order = 6,
+      order = 16,
       type = "keybinding",
       name = L["BINDINGS_RIGHT"],
       desc = L["BINDINGS_RIGHT_DESC"],
@@ -109,10 +153,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.RIGHT = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     SELECT = {
-      order = 7,
+      order = 17,
       type = "keybinding",
       name = L["BINDINGS_SELECT"],
       desc = L["BINDINGS_SELECT_DESC"],
@@ -123,10 +170,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.SELECT = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     EXPAND = {
-      order = 8,
+      order = 18,
       type = "keybinding",
       name = L["BINDINGS_EXPAND"],
       desc = L["BINDINGS_EXPAND_DESC"],
@@ -137,10 +187,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.EXPAND = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     CLOSE = {
-      order = 9,
+      order = 19,
       type = "keybinding",
       name = L["BINDINGS_CLOSE"],
       desc = L["BINDINGS_CLOSE_DESC"],
@@ -151,10 +204,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.CLOSE = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     COPY = {
-      order = 10,
+      order = 20,
       type = "keybinding",
       name = L["BINDINGS_COPY"],
       desc = L["BINDINGS_COPY_DESC"],
@@ -165,10 +221,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.COPY = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     PASTE = {
-      order = 11,
+      order = 21,
       type = "keybinding",
       name = L["BINDINGS_PASTE"],
       desc = L["BINDINGS_PASTE_DESC"],
@@ -179,10 +238,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.PASTE = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     CURRENT = {
-      order = 12,
+      order = 22,
       type = "keybinding",
       name = L["BINDINGS_CURRENT"],
       desc = L["BINDINGS_CURRENT_DESC"],
@@ -193,10 +255,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.CURRENT = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     TOME = {
-      order = 13,
+      order = 23,
       type = "keybinding",
       name = L["BINDINGS_TOME"],
       desc = L["BINDINGS_TOME_DESC"],
@@ -207,10 +272,13 @@ mod.Options = {
         Engine.Profile.bindings.keys.TOME = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     },
 
     SETTINGS = {
-      order = 14,
+      order = 24,
       type = "keybinding",
       name = L["BINDINGS_SETTINGS_BUTTON"],
       desc = L["BINDINGS_SETTINGS_BUTTON_DESC"],
@@ -221,6 +289,9 @@ mod.Options = {
         Engine.Profile.bindings.keys.SETTINGS = value;
         Engine.AddOn:OnCfgChange();
       end,
+      disabled = function()
+        return Engine.Profile.bindings.shortCuts.disableAll;
+      end
     }
 
 
@@ -245,6 +316,10 @@ function mod.OnProfileChanged()
   debug("profile changed");
 
 
+end
+
+function mod.IsShortutsDisabled()
+  return Engine.Profile.bindings.shortCuts.disableAll;
 end
 
 function mod.ShortcutClick(button)
@@ -278,6 +353,7 @@ function mod:CreateShortcut(parent, name, key)
   frame.name=name;
   frame.frameName=frameName;
   frame.key=key;
+  frame.hasBinding=false;
 
   self.shortCuts[name]=frame;
 
@@ -296,15 +372,24 @@ end
 
 function mod:EnableShourtcuts(enabled)
 
-  debug("EnableShourtcuts: %s", enabled and "true" or "false");
+  local enabling = enabled and (not self.IsShortutsDisabled());
+
+  debug("EnableShourtcuts: %s", enabling and "true" or "false");
 
   for _, frame in pairs(self.shortCuts) do
-    if enabled then
-      _G.SetOverrideBindingClick(frame, true, frame.key, frame.frameName, "LeftClick");
+    if enabling then
+      if not frame.hasBinding then
+        _G.SetOverrideBindingClick(frame, true, frame.key, frame.frameName, "LeftClick");
+      end
     else
-      _G.ClearOverrideBindings(frame);
+      if frame.hasBinding then
+        _G.ClearOverrideBindings(frame);
+      end
     end
+    frame.hasBinding=enabling;
   end
+
+  self.shortCutsEnabled = enabling;
 
 end
 
@@ -320,6 +405,7 @@ function mod:OnInitialize()
   debug("bindings module Initialize");
 
   self:LoadProfileSettings();
+  self.shortCutsEnabled = false;
 
 end
 

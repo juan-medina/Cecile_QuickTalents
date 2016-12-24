@@ -41,3 +41,8 @@ L["BINDINGS_TOME"] = "Usar Escrito"
 L["BINDINGS_TOME_DESC"] = "Cambia el atajo para usar un 'Escrito de la mente tranquila'"
 L["BINDINGS_SETTINGS_BUTTON"] = "Abrir Opciones"
 L["BINDINGS_SETTINGS_BUTTON_DESC"] = "Cambiar el atajo para abrir las opciones"
+L["BINDINGS_HELP"] = [[Los atajos solo pueden ser usados cuando la ventana de la interfaz de usuario es visible como una forma rapida para cambiar los talentos y pueden desactivare en cualquier momento.
+
+]]
+L["BINDINGS_DISABLE"] = "Desactivar Atajos"
+L["BINDINGS_DISABLE_DESC"] = "Desactiva todos los atajos"
