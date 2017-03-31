@@ -15,3 +15,5 @@ if not L then
 end
 
 L["DATABASE_MYTHIC_PLUS"] = "Miticas +"
+L["DATABASE_CUSTOM"] = "Personalizadas"
+L["DATABASE_CUSTOM_ENTRY"] = "Personalizada "

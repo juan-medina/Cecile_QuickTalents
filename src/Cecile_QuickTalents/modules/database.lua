@@ -114,6 +114,7 @@ function mod:LoadRaid(instanceID)
 end
 
 function mod:LoadRaids()
+  debug("Loading raids");
   for indexInstance=1,25 do
 
     local instanceID = _G.EJ_GetInstanceByIndex(indexInstance, true);
@@ -127,68 +128,38 @@ function mod:LoadRaids()
   end
 end
 
-function mod:CreateMythicsPlusTable()
+function mod:LoadMythicsPlus()
+  debug("Loading mythics +");
+  local raid = self:AddRaid(99999, L["DATABASE_MYTHIC_PLUS"]);
+  local mapsIDs =_G.C_ChallengeMode.GetMapTable();
 
-  self.mythicInstancesNames = { };
+  local list = {};
 
-  local mapsIDs = {};
-
-  _G.C_ChallengeMode.GetMapTable(mapsIDs);
+  local item;
 
   for _,v in ipairs(mapsIDs) do
 
-    local name = _G.C_ChallengeMode.GetMapInfo(v);
+    item = {};
+    item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapInfo(v);
 
-    self.mythicInstancesNames[name] = true;
+    table.insert(list, item);
 
+  end
+
+  table.sort(list, function(a,b) return a.name < b.name end);
+
+  for _,v in ipairs(list) do
+    mod:AddBoss(raid, "MYTHIC-"..v.id, v.name, v.texture);
   end
 
 end
 
-function mod:LoadMythicsPlus()
+function mod:LoadCustom()
+  debug("Loading customs");
+  local raid = self:AddRaid(8888, L["DATABASE_CUSTOM"]);
 
-  if self.mythicInstancesNames==nil then
-    self:CreateMythicsPlusTable();
-  end
-
-  local raid = self:AddRaid(99999, L["DATABASE_MYTHIC_PLUS"]);
-
-  for indexInstance=1,25 do
-
-    local instanceID, name = _G.EJ_GetInstanceByIndex(indexInstance, false);
-
-    if not instanceID then
-      break;
-    end
-
-    if self.mythicInstancesNames[name] then
-
-      local lastEncounterID;
-
-      _G.EJ_SelectInstance(instanceID);
-
-      for indexBoss=1,25 do
-
-        local _, _, encounterID = _G.EJ_GetEncounterInfoByIndex(indexBoss);
-
-        if not encounterID then
-          break;
-        end
-
-        lastEncounterID = encounterID;
-
-      end
-
-      if lastEncounterID then
-
-        local _, _, _, _, bossImage = _G.EJ_GetCreatureInfo(1, lastEncounterID);
-
-        mod:AddBoss(raid, instanceID.."-"..lastEncounterID, name, bossImage);
-
-      end
-
-    end
-
+  for i=1,10 do
+    mod:AddBoss(raid, "CUSTOM-"..i, L["DATABASE_CUSTOM_ENTRY"]..i, "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer");
   end
 
 end
@@ -200,6 +171,7 @@ function mod:Load()
 
   self:LoadRaids();
   self:LoadMythicsPlus();
+  self:LoadCustom();
 
 end
 
