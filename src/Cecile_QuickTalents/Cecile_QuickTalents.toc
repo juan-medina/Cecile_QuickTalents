@@ -1,8 +1,8 @@
-## Interface: 70100
+## Interface: 70200
 ## Title: |cffffffffCecile|r_|cfffff569QuickTalents|r
 ## Notes: Quick Talent helper
 ## Author: Cecile
-## Version: 1.1.0.release
+## Version: 1.1.1.release
 ## SavedVariables: Cecile_QuickTalentsDB
 ## OptionalDeps:
 ## X-Icon: Interface\AddOns\Cecile_QuickTalents\media\icons\minimap

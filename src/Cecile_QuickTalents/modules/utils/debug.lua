@@ -182,7 +182,6 @@ function mod:OnInitialize()
   frame.msg:SetFontObject(_G.ChatFontNormal);
   frame.msg:SetJustifyH("LEFT");
   frame.msg:EnableMouseWheel(true);
-  frame.msg:FontTemplate();
 
   -- Hook scrolling to scroll up down with mouse wheel. shift mouse wheel
   -- scroll all the way to the top/bottom.

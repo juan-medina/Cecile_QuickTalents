@@ -635,7 +635,7 @@ end
 function mod:MoveSelection(pos)
 
   local height = 45;
-  local startY = 87 + ((pos -1) * height);
+  local startY = 30 + 87 + ((pos -1) * height);
 
   self.mainFrame.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
   self.mainFrame.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
@@ -1050,7 +1050,7 @@ function mod:CreateBossRow(number)
   frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 0, 0);
   frame.label:SetText("Super Mega Boss of hell "..number.." :");
 
-  local start = 90;
+  local start = 30+90;
   local posX = 10;
   local posY = start+(height*(number-1));
 
@@ -1161,10 +1161,18 @@ function mod:CreateRaidTab(number)
   local width = 160;
   local height = 30;
 
+
+
   local frame = self:CreateButton("Super Raid Instace "..number..":", nil, nil, width, height, self.raidColor);
 
-  local posX = gap+((width+gap)*(number-1));
   local posY = -50;
+  local rnumber = number;
+  if(number>3) then
+    rnumber = number-3;
+    posY=posY-30;
+  end
+
+  local posX = gap+((width+gap)*(rnumber-1));
 
   frame:SetPoint('TOPLEFT', self.mainFrame, 'TOPLEFT', posX, posY);
 
@@ -1470,12 +1478,12 @@ function mod:CreateWidgets()
 
   self.bindings:CreateShortcuts(self.mainFrame, self);
 
-  for i=1,database:GetMaxBosses() do
-    self:CreateBossRow(i);
-  end
-
   for i=1,database:GetNumRaids() do
     self:CreateRaidTab(i);
+  end
+
+  for i=1,database:GetMaxBosses() do
+    self:CreateBossRow(i);
   end
 
   self.mainFrame.talentFlyout = self:CreateTalentFlyout();
@@ -1618,6 +1626,7 @@ end
 function mod:CreateUI()
 
   local numtabs = database:GetNumRaids();
+  numtabs = 3;
 
   self.windowSize.width = 6 + (numtabs*160) + ( (numtabs-1)*6) + 32;
 
@@ -1630,7 +1639,7 @@ function mod:CreateUI()
   end
 
   local numbosses = database:GetMaxBosses();
-  self.windowSize.height = self.windowSize.normalHeight+(numbosses*45)+40;
+  self.windowSize.height = self.windowSize.normalHeight+(numbosses*45)+40+30;
 
   self:CreateWidgets();
 
