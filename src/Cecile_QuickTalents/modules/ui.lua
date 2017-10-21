@@ -635,7 +635,7 @@ end
 function mod:MoveSelection(pos)
 
   local height = 45;
-  local startY = 30 + 87 + ((pos -1) * height);
+  local startY = 30 + 87 + ((pos -1) * height)+40;
 
   self.mainFrame.selectionBox:SetPoint("TOPLEFT", self.mainFrame , "TOPLEFT", 4, -startY);
   self.mainFrame.selectionBox:SetPoint("TOPRIGHT", self.mainFrame , "TOPRIGHT", -4, -(startY+height));
@@ -810,7 +810,7 @@ function mod:TalentFlyoutClick(button)
 end
 
 function mod:AnyButtonClick()
-  _G.PlaySound("igMainMenuOption");
+  _G.PlaySound(_G.SOUNDKIT.IG_MAINMENU_OPEN);
   if self.mainFrame then
     self.mainFrame.talentFlyout:Hide();
   end
@@ -1050,7 +1050,7 @@ function mod:CreateBossRow(number)
   frame.label:SetPoint('TOPLEFT', frame, 'TOPLEFT', 0, 0);
   frame.label:SetText("Super Mega Boss of hell "..number.." :");
 
-  local start = 30+90;
+  local start = 30+90+40;
   local posX = 10;
   local posY = start+(height*(number-1));
 
@@ -1161,8 +1161,6 @@ function mod:CreateRaidTab(number)
   local width = 160;
   local height = 30;
 
-
-
   local frame = self:CreateButton("Super Raid Instace "..number..":", nil, nil, width, height, self.raidColor);
 
   local posY = -50;
@@ -1170,6 +1168,12 @@ function mod:CreateRaidTab(number)
   if(number>3) then
     rnumber = number-3;
     posY=posY-30;
+
+    if(number>6) then
+        rnumber = number-6;
+        posY=posY-30;
+    end
+
   end
 
   local posX = gap+((width+gap)*(rnumber-1));
@@ -1498,7 +1502,13 @@ function mod:CreateWidgets()
 end
 
 function mod:SetRaid(index, raid)
-  self.mainFrame.raid[index]:SetText(raid.name);
+  local max = 23-2
+  local name = raid.name
+  if (_G.strlen(name)>max) then
+    name = _G.strsub(name,1,max)..".."
+  end
+
+  self.mainFrame.raid[index]:SetText(name);
 end
 
 function mod:GetCurrentTalent(row)
@@ -1639,7 +1649,7 @@ function mod:CreateUI()
   end
 
   local numbosses = database:GetMaxBosses();
-  self.windowSize.height = self.windowSize.normalHeight+(numbosses*45)+40+30;
+  self.windowSize.height = self.windowSize.normalHeight+(numbosses*45)+40+30+40;
 
   self:CreateWidgets();
 
