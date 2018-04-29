@@ -20,6 +20,9 @@ mod.Defaults = {
 local debug = Engine.AddOn:GetModule("debug");
 
 
+local DEFAULT_BOSS = "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer"
+local DEFAULT_MAP = 1778897
+
 function mod.LoadProfileSettings()
 
   debug("Database module LoadProfileSettings");
@@ -91,7 +94,6 @@ function mod:LoadRaid(instanceID)
   local name, _, _, _, _, _, dungeonAreaMapID  = _G.EJ_GetInstanceInfo(instanceID);
 
   if not name then return; end
-  if (not dungeonAreaMapID) or (not (dungeonAreaMapID > 0)) then return; end
 
   local raid = self:AddRaid(instanceID, name);
 
@@ -107,7 +109,7 @@ function mod:LoadRaid(instanceID)
 
     local _, _, _, _, bossImage = _G.EJ_GetCreatureInfo(1, encounterID);
 
-    mod:AddBoss(raid, encounterID, bossName, bossImage);
+    mod:AddBoss(raid, encounterID, bossName, bossImage or DEFAULT_BOSS);
 
   end
 
@@ -149,7 +151,7 @@ function mod:LoadMythicsPlus()
   table.sort(list, function(a,b) return a.name < b.name end);
 
   for _,v in ipairs(list) do
-    mod:AddBoss(raid, "MYTHIC-"..v.id, v.name, v.texture);
+    mod:AddBoss(raid, "MYTHIC-"..v.id, v.name, (v.texture==0) and DEFAULT_MAP or v.texture);
   end
 
 end
@@ -159,7 +161,7 @@ function mod:LoadCustom()
   local raid = self:AddRaid(8888, L["DATABASE_CUSTOM"]);
 
   for i=1,10 do
-    mod:AddBoss(raid, "CUSTOM-"..i, L["DATABASE_CUSTOM_ENTRY"]..i, "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer");
+    mod:AddBoss(raid, "CUSTOM-"..i, L["DATABASE_CUSTOM_ENTRY"]..i, DEFAULT_BOSS);
   end
 
 end
