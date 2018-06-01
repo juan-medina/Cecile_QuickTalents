@@ -142,7 +142,12 @@ function mod:LoadMythicsPlus()
   for _,v in ipairs(mapsIDs) do
 
     item = {};
-    item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapInfo(v);
+
+    if Engine.isBfA then
+      item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapUIInfo(v);
+    else
+      item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapInfo(v);
+    end
 
     table.insert(list, item);
 
