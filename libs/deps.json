@@ -1,0 +1,52 @@
+{
+  "Ace3" : {
+    "type" : "svn",
+    "url" : "https://repos.wowace.com/wow/ace3/trunk",
+    "folders" : [
+      "AceAddon-3.0",
+      "AceComm-3.0",
+      "AceConfig-3.0",
+      "AceDB-3.0",
+      "AceDBOptions-3.0",
+      "AceEvent-3.0",
+      "AceGUI-3.0",
+      "AceHook-3.0",
+      "AceLocale-3.0",
+      "AceTimer-3.0",
+      "CallbackHandler-1.0",
+      "LibStub" ],
+    "destination" : "Libs",
+    "disabled" : false
+  },
+  "AceGUI-3.0-SharedMediaWidgets" : {
+    "type" : "svn",
+    "url" : "https://repos.wowace.com/wow/ace-gui-3-0-shared-media-widgets/trunk",
+    "folders" : [
+      "AceGUI-3.0-SharedMediaWidgets" ],
+    "destination" : "Libs",
+    "disabled" : false
+  },
+  "LibDBIcon-1.0" : {
+    "type" : "svn",
+    "url" : "https://repos.wowace.com/wow/libdbicon-1-0/trunk",
+    "folders" : [
+      "LibDBIcon-1.0" ],
+    "destination" : "Libs",
+    "disabled" : false
+  },
+  "LibDataBroker-1.1" : {
+    "type" : "git",
+    "url" : "https://repos.wowace.com/wow/libdatabroker-1-1",
+    "folders" : [],
+    "destination" : "Libs",
+    "disabled" : false
+  },
+  "LibSharedMedia-3.0" : {
+    "type" : "svn",
+    "url" : "https://repos.wowace.com/wow/libsharedmedia-3-0/trunk",
+    "folders" : ["LibSharedMedia-3.0"],
+    "destination" : "Libs",
+    "disabled" : false
+  }
+}
+
