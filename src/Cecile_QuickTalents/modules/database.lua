@@ -20,7 +20,7 @@ mod.Defaults = {
 local debug = Engine.AddOn:GetModule("debug");
 
 
-local DEFAULT_BOSS = "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer"
+local DEFAULT_BOSS = "Interface\\EncounterJournal\\UI-EJ-BOSS-Default"
 local DEFAULT_MAP = 1778897
 
 function mod.LoadProfileSettings()
@@ -192,7 +192,8 @@ function mod:LoadCustom()
   for i=1,10 do
     if(Engine.Profile.custom["custom"..i].enabled) then
       local name = Engine.Profile.custom["custom"..i].name
-      mod:AddBoss(raid, "CUSTOM-"..i, name, DEFAULT_BOSS);
+      local texture  = Engine.Profile.custom["custom"..i].texture
+      mod:AddBoss(raid, "CUSTOM-"..i, name, texture or DEFAULT_BOSS);
     end
   end
 

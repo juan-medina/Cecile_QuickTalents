@@ -8,7 +8,7 @@ local mod = Engine.AddOn:NewModule("custom");
 --get the locale
 local L=Engine.Locale;
 
-local DEFAULT_BOSS = "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer"
+local DEFAULT_BOSS = "Interface\\EncounterJournal\\UI-EJ-BOSS-Default"
 
 --module defaults
 mod.Defaults = {
