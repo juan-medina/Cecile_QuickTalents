@@ -140,7 +140,7 @@ function mod:LoadMythicsPlus()
   for _,v in ipairs(mapsIDs) do
 
     item = {};
-    item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapInfo(v);
+    item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapUIInfo(v);
 
     table.insert(list, item);
 
