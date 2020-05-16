@@ -1407,7 +1407,8 @@ function mod:CreateTomeButton()
   frame:SetScript("OnEnter",mod.onTomeEnter);
   frame:SetScript("OnLeave",mod.onTomeLeave);
 
-  local itemName, _, _, _, _, _, _, _, _, itemTexture, _ = _G.GetItemInfo(TOME_ID);
+  local itemName = _G.GetItemInfo(TOME_ID);
+  local itemTexture = _G.GetItemIcon(TOME_ID)
 
   frame.icon:SetTexture(itemTexture);
   frame:SetAttribute("type", "item");
