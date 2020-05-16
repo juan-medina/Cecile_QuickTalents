@@ -9,6 +9,7 @@ local AddOn = LibStub("AceAddon-3.0"):NewAddon( AddOnName,
 
 Engine.Name  = AddOnName;
 Engine.AddOn = AddOn;
+Engine.isBfA = select(4, GetBuildInfo()) >= 80000
 
 --store locale in the engine
 local L = LibStub("AceLocale-3.0"):GetLocale(Engine.Name);

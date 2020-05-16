@@ -57,7 +57,7 @@ mod.Defaults = {
     },
     bossFont = {
       name = "Cecile",
-      size = 16,
+      size = 14,
       color = {
           r = 1,
           g = 1,
@@ -1408,7 +1408,7 @@ function mod:CreateTomeButton()
   frame:SetScript("OnLeave",mod.onTomeLeave);
 
   local itemName = _G.GetItemInfo(TOME_ID);
-  local itemTexture = _G.GetItemIcon(TOME_ID)
+  local itemTexture = _G.GetItemIcon(TOME_ID);
 
   frame.icon:SetTexture(itemTexture);
   frame:SetAttribute("type", "item");

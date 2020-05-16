@@ -5,4 +5,5 @@
   <Script file="ui.lua"/>
   <Script file="bindings.lua"/>
   <Script file="miscellaneous.lua"/>
+  <Script file="custom.lua"/>
 </Ui>

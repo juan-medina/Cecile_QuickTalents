@@ -20,9 +20,14 @@ mod.Defaults = {
 local debug = Engine.AddOn:GetModule("debug");
 
 
+local DEFAULT_BOSS = "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer"
+local DEFAULT_MAP = 1778897
+
 function mod.LoadProfileSettings()
 
   debug("Database module LoadProfileSettings");
+
+  mod:LoadCustom();
 
 end
 
@@ -91,7 +96,6 @@ function mod:LoadRaid(instanceID)
   local name, _, _, _, _, _, dungeonAreaMapID  = _G.EJ_GetInstanceInfo(instanceID);
 
   if not name then return; end
-  if (not dungeonAreaMapID) or (not (dungeonAreaMapID > 0)) then return; end
 
   local raid = self:AddRaid(instanceID, name);
 
@@ -107,7 +111,7 @@ function mod:LoadRaid(instanceID)
 
     local _, _, _, _, bossImage = _G.EJ_GetCreatureInfo(1, encounterID);
 
-    mod:AddBoss(raid, encounterID, bossName, bossImage);
+    mod:AddBoss(raid, encounterID, bossName, bossImage or DEFAULT_BOSS);
 
   end
 
@@ -140,7 +144,12 @@ function mod:LoadMythicsPlus()
   for _,v in ipairs(mapsIDs) do
 
     item = {};
-    item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapUIInfo(v);
+
+    if Engine.isBfA then
+      item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapUIInfo(v);
+    else
+      item.name, item.id, _, item.texture = _G.C_ChallengeMode.GetMapInfo(v);
+    end
 
     table.insert(list, item);
 
@@ -149,17 +158,42 @@ function mod:LoadMythicsPlus()
   table.sort(list, function(a,b) return a.name < b.name end);
 
   for _,v in ipairs(list) do
-    mod:AddBoss(raid, "MYTHIC-"..v.id, v.name, v.texture);
+    mod:AddBoss(raid, "MYTHIC-"..v.id, v.name, (v.texture==0) and DEFAULT_MAP or v.texture);
   end
 
 end
 
+local CUSTOM_RAID = 8888;
+
 function mod:LoadCustom()
   debug("Loading customs");
-  local raid = self:AddRaid(8888, L["DATABASE_CUSTOM"]);
+
+  if self.raids == nil then
+    return;
+  end
+
+
+  local raid = nil;
+
+  for i=0,#self.raids do
+    local possibleRaid = self.raids[i];
+    if possibleRaid and possibleRaid.id == CUSTOM_RAID then
+      raid = possibleRaid;
+      break;
+    end
+  end
+
+  if raid  then
+    raid.bosses = {}
+  else
+    raid = self:AddRaid(CUSTOM_RAID, L["DATABASE_CUSTOM"]);
+  end
 
   for i=1,10 do
-    mod:AddBoss(raid, "CUSTOM-"..i, L["DATABASE_CUSTOM_ENTRY"]..i, "Interface\\EncounterJournal\\UI-EJ-BOSS-Algalon the Observer");
+    if(Engine.Profile.custom["custom"..i].enabled) then
+      local name = Engine.Profile.custom["custom"..i].name
+      mod:AddBoss(raid, "CUSTOM-"..i, name, DEFAULT_BOSS);
+    end
   end
 
 end

@@ -11,4 +11,6 @@
   <Script file="bindings_esES.lua"/>
   <Script file="miscellaneous_enUS.lua"/>
   <Script file="miscellaneous_esES.lua"/>
+  <Script file="custom_enUS.lua"/>
+  <Script file="custom_esES.lua"/>
 </Ui>
