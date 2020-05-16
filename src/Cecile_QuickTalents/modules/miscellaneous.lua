@@ -133,7 +133,7 @@ function mod.hookTalentsFrame()
     parent.cqtButton = button;
   end
 
-  parent.cqtButton:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -2, -2);
+  parent.cqtButton:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -2, 2);
 
   if _G.PlayerTalentFrameTalents:IsShown() and Engine.Profile.miscellaneous.talentsPanel.addButon then
     parent.cqtButton:Show();
