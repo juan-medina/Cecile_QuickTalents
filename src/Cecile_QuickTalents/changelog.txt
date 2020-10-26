@@ -1,3 +1,5 @@
+1.3.2.release
+- Update for 9.0
 1.3.1.release
 - Update for 8.3
 - Fix Icon for tome
